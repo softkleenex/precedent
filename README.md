@@ -24,7 +24,7 @@ Built entirely on Forge — UI Kit, KVS, product events, `rovo:agent`, `rovo:ski
 
 ## Measured
 
-`eval/` holds 69 labelled work items (7 in Korean) against 20 decisions. The shipped rules score **precision 1.000, recall 0.814** at zero cost — `node eval/run_rules.mjs`. We also benchmarked an LLM pipeline (Haiku/Sonnet/Opus 5.5, F1 up to 0.992) and explain in [`eval/RESULTS.md`](eval/RESULTS.md) why we moved judgement to the calling agent instead.
+`eval/` holds 69 labelled work items (7 in Korean) against 19 decisions (7 parsed from the demo Confluence pages + 12 distractors). The shipped rules score **precision 1.000, recall 0.814** at zero cost — `node eval/run_rules.mjs`. We also benchmarked an LLM pipeline (Haiku/Sonnet/Opus 5.5, F1 up to 0.992) and explain in [`eval/RESULTS.md`](eval/RESULTS.md) why we moved judgement to the calling agent instead.
 
 ## Architecture
 

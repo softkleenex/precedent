@@ -8,7 +8,7 @@ Run it yourself, free and offline:
 node eval/run_rules.mjs --verbose
 ```
 
-### Conflict check — 69 labelled work items, 20 decisions
+### Conflict check — 69 labelled work items, 19 decisions
 Decisions: 7 parsed from the live Confluence ADRs/meeting notes (`eval/pages.json`) + 12 distractors.
 Cases: obvious conflicts, paraphrases (Amazon MSK ⇒ Kafka, Couchbase ⇒ document DB, Apollo ⇒ GraphQL, Firebase Auth ⇒ Auth0 category), negations, conflicts buried in long chore tickets, scoped exceptions (internal tools, JSONB), research spikes, migrations away from rejected tools, superseded decisions, multi-decision conflicts, and 7 Korean tickets against English decisions.
 
