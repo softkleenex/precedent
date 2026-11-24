@@ -147,7 +147,8 @@
    "title": "Authentication through Auth0 (OIDC)",
    "decision": "All user sign-in goes through Auth0 using OIDC.",
    "alternativesRejected": [
-    "passwords or build our own login"
+    "passwords",
+    "our own login"
    ],
    "rationale": "Rationale: SOC 2 scope is smaller when credentials never touch our database, and Auth0 already provides MFA.",
    "status": "accepted",
@@ -188,13 +189,13 @@
    "pageTitle": "ADR-005: Frontend server state with TanStack Query"
   },
   {
-   "title": "Every endpoint that moves money must require an Idempotency-Key header, and retries…",
-   "decision": "every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+   "title": "Every endpoint that moves money must require an Idempotency-Key header",
+   "decision": "Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
    "alternativesRejected": [],
    "rationale": "",
    "status": "accepted",
    "date": "2026-10-14",
-   "quote": "every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+   "quote": "Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
    "exceptions": "",
    "revisitWhen": "",
    "chosen": [],
@@ -203,13 +204,13 @@
    "pageTitle": "2026-10-14 Platform sync — meeting notes"
   },
   {
-   "title": "No new microservices until the ledger monolith has full test coverage on transfers;…",
-   "decision": "no new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+   "title": "No new microservices until the ledger monolith has full test…",
+   "decision": "No new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
    "alternativesRejected": [],
    "rationale": "",
    "status": "accepted",
    "date": "2026-10-14",
-   "quote": "no new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+   "quote": "No new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
    "exceptions": "",
    "revisitWhen": "",
    "chosen": [

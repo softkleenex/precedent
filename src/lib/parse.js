@@ -52,7 +52,11 @@ export function rejectedIn(text = '') {
     let m;
     while ((m = re.exec(text))) found.push(m[1].trim());
   }
-  return found;
+  // "passwords or build our own login" -> ["passwords", "our own login"]
+  return found
+    .flatMap((f) => f.split(/\s+or\s+|,\s*/))
+    .map((f) => f.replace(/^(?:build|store|use|run|add|offer|introduce|any other)\s+/i, '').trim())
+    .filter(Boolean);
 }
 
 /**
@@ -108,7 +112,8 @@ export function parseDecisions(page) {
   const scopeSentences = (text) =>
     sentences(text).filter((s) => /\b(may|except|unless|exempt|allowed|still|internal)\b|예외|허용/i.test(s));
 
-  const make = (text, title, extraRejected = []) => {
+  const make = (rawText, title, extraRejected = []) => {
+    const text = rawText.charAt(0).toUpperCase() + rawText.slice(1);
     const quote = sentences(text).slice(0, 2).join(' ');
     const rejected = [...new Set([...rejectedIn(text), ...extraRejected].map((r) => r.replace(/^(?:a|an|the)\s+/i, '').trim()))].filter(
       (r) => r.length > 1 && r.length <= 60
@@ -134,7 +139,9 @@ export function parseDecisions(page) {
     out.push(make(decisionParas.join(' '), cleanTitle, [...altNames, ...(titleRejected ? [titleRejected] : [])]));
   }
   for (const item of decisionItems) {
-    const title = item.length > 90 ? `${item.slice(0, 87).replace(/\s+\S*$/, '')}…` : item.replace(/[.;]$/, '');
+    // Title: the first clause of the bullet, kept short enough to scan in a table.
+    const clause = item.split(/;|,\s+(?:and|so|because)\b/)[0].replace(/[.;]$/, '');
+    const title = clause.length > 70 ? `${clause.slice(0, 67).replace(/\s+\S*$/, '')}…` : clause;
     out.push(make(item, title.charAt(0).toUpperCase() + title.slice(1)));
   }
   return out;

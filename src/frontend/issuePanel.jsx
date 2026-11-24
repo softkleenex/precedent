@@ -1,47 +1,10 @@
-// Jira issue panel: shows which team decisions this issue touches.
+// Jira issue panel: is this issue consistent with what the team already decided?
+// States: loading, error (retry), no decisions yet (empty), clear, conflict.
 
 import React, { useEffect, useState } from 'react';
-import ForgeReconciler, {
-  Box,
-  Button,
-  EmptyState,
-  Inline,
-  Link,
-  Lozenge,
-  SectionMessage,
-  Spinner,
-  Stack,
-  Text,
-  Em,
-  Strong,
-} from '@forge/react';
+import ForgeReconciler, { Button, EmptyState, Inline, Lozenge, SectionMessage, Spinner, Stack, Text } from '@forge/react';
 import { invoke } from '@forge/bridge';
-
-const RELATION = {
-  conflicts: { appearance: 'error', label: 'Conflicts with' },
-  revisits: { appearance: 'warning', label: 'Revisits a rejected option in' },
-  follows: { appearance: 'information', label: 'Follows' },
-};
-
-function Finding({ f }) {
-  const r = RELATION[f.relation];
-  return (
-    <SectionMessage appearance={r.appearance} title={`${r.label}: ${f.decisionTitle}`}>
-      <Stack space="space.100">
-        <Text>{f.explanation}</Text>
-        <Text>
-          <Strong>This issue: </Strong>
-          <Em>“{f.workQuote}”</Em>
-        </Text>
-        <Text>
-          <Strong>Decision ({f.date || 'undated'}): </Strong>
-          <Em>“{f.decisionQuote}”</Em>
-        </Text>
-        {f.pageUrl ? <Link href={f.pageUrl} openNewTab>Source: {f.pageTitle}</Link> : <Text>Source: {f.pageTitle}</Text>}
-      </Stack>
-    </SectionMessage>
-  );
-}
+import { FindingCard, RelatedList } from './components.jsx';
 
 function App() {
   const [result, setResult] = useState(null);
@@ -64,19 +27,23 @@ function App() {
     run(false);
   }, []);
 
-  if (loading) {
+  if (loading && !result) {
     return (
       <Inline space="space.100" alignBlock="center">
-        <Spinner size="small" />
-        <Text>Checking this issue against your team's decisions…</Text>
+        <Spinner size="small" label="Checking" />
+        <Text color="color.text.subtle">Checking against your team's decisions…</Text>
       </Inline>
     );
   }
   if (error) {
     return (
       <SectionMessage appearance="error" title="Precedent couldn't check this issue">
-        <Text>{error}</Text>
-        <Button onClick={() => run(true)}>Try again</Button>
+        <Stack space="space.100">
+          <Text>{error}</Text>
+          <Inline>
+            <Button onClick={() => run(true)}>Try again</Button>
+          </Inline>
+        </Stack>
       </SectionMessage>
     );
   }
@@ -84,64 +51,36 @@ function App() {
     return (
       <EmptyState
         header="No decisions recorded yet"
-        description='Label Confluence pages with "decision" or "adr", then open Precedent in Confluence and press Sync.'
+        description='Label Confluence ADRs or meeting notes with "decision" or "adr". Precedent picks them up as soon as they are saved.'
       />
     );
   }
 
-  if (result.verdict === 'unavailable') {
-    return (
-      <SectionMessage appearance="warning" title="AI check skipped for this issue">
-        <Stack space="space.100">
-          <Text>
-            Atlassian's AI safety filter declined to analyse this issue ({result.reason}). This usually means it contains
-            personal data. Remove it from the description and press Re-check.
-          </Text>
-          {(result.related || []).map((r) => (
-            <Text key={r.decisionId}>
-              Possibly relevant: {r.pageUrl ? <Link href={r.pageUrl} openNewTab>{r.decisionTitle}</Link> : r.decisionTitle}
-            </Text>
-          ))}
-          <Button onClick={() => run(true)}>Re-check</Button>
-        </Stack>
-      </SectionMessage>
-    );
-  }
-
-  const problems = result.findings.filter((f) => f.relation !== 'follows').length;
+  const n = result.findings.length;
   return (
-    <Stack space="space.150">
+    <Stack space="space.200">
       <Inline space="space.100" alignBlock="center" spread="space-between">
-        {problems > 0 ? (
-          <Lozenge appearance="removed" isBold>{`${problems} decision ${problems === 1 ? 'conflict' : 'conflicts'}`}</Lozenge>
-        ) : (
-          <Lozenge appearance="success" isBold>Consistent with team decisions</Lozenge>
-        )}
-        <Button appearance="subtle" onClick={() => run(true)}>Re-check</Button>
+        <Inline space="space.100" alignBlock="center">
+          {n > 0 ? (
+            <Lozenge appearance="removed" isBold>{`${n} ${n === 1 ? 'conflict' : 'conflicts'}`}</Lozenge>
+          ) : (
+            <Lozenge appearance="success" isBold>
+              Consistent
+            </Lozenge>
+          )}
+          <Text size="small" color="color.text.subtle">
+            {`${result.considered} decisions checked`}
+          </Text>
+        </Inline>
+        <Button appearance="subtle" spacing="compact" isDisabled={loading} onClick={() => run(true)}>
+          {loading ? 'Checking…' : 'Re-check'}
+        </Button>
       </Inline>
-      {result.findings.length === 0 && (
-        <Text>No recorded decision is contradicted ({result.considered} decisions checked).</Text>
-      )}
       {result.findings.map((f, i) => (
-        <Finding key={`${f.decisionId}-${i}`} f={f} />
+        <FindingCard key={`${f.decisionId}-${i}`} f={f} />
       ))}
-      {(result.related || []).length > 0 && (
-        <Stack space="space.050">
-          <Text weight="bold">Related decisions</Text>
-          {result.related.map((r) => (
-            <Text key={r.decisionId} size="small">
-              {r.pageUrl ? <Link href={r.pageUrl} openNewTab>{r.decisionTitle}</Link> : r.decisionTitle}
-              {` — ${r.decision}`}
-            </Text>
-          ))}
-        </Stack>
-      )}
-      <Box>
-        <Text size="small">
-          Findings quote the exact sentence of this issue and of the decision page. Checks are rule-based and run on
-          Atlassian, with no AI cost and no data leaving your site.
-        </Text>
-      </Box>
+      {n === 0 && <Text color="color.text.subtle">Nothing in this issue contradicts a recorded decision.</Text>}
+      <RelatedList related={result.related} />
     </Stack>
   );
 }

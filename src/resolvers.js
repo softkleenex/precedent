@@ -5,7 +5,7 @@ import { checkAgainstDecisions } from './lib/check.js';
 import { findDecisionPages } from './lib/confluence.js';
 import { syncPage } from './lib/extract.js';
 import { readIssueText } from './lib/jira.js';
-import { getCachedCheck, getSettings, listDecisions, saveSettings, setCachedCheck, removePage } from './lib/store.js';
+import { getCachedCheck, getSettings, getStats, listDecisions, saveSettings, setCachedCheck, removePage } from './lib/store.js';
 import { hash } from './lib/text.js';
 
 const resolver = new Resolver();
@@ -30,6 +30,11 @@ resolver.define('getIssueCheck', async ({ payload, context }) => {
 });
 
 resolver.define('listDecisions', async () => listDecisions());
+
+// "Try it" tab: check arbitrary text (a ticket or a plan) without saving anything.
+resolver.define('checkText', async ({ payload }) => checkAgainstDecisions(String(payload?.text || '').slice(0, 20000)));
+
+resolver.define('getStats', async () => getStats());
 
 resolver.define('findPages', async () => findDecisionPages());
 

@@ -86,3 +86,14 @@ export async function saveSettings(settings) {
   await kvs.set('settings', merged);
   return merged;
 }
+
+/** Counts for the registry header. */
+export async function getStats() {
+  const [decisions, pages, checks] = await Promise.all([listDecisions(), listByPrefix('page:'), listByPrefix('check:')]);
+  return {
+    decisions: decisions.length,
+    pages: pages.length,
+    rejected: decisions.reduce((n, d) => n + (d.alternativesRejected?.length || 0), 0),
+    flagged: checks.filter((c) => c?.result?.verdict === 'conflict').length,
+  };
+}

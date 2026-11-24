@@ -47,6 +47,11 @@ function phraseStems(phrase) {
 function phraseHit(phrase, sentence) {
   const stems = phraseStems(phrase);
   if (stems.length === 0) return false;
+  // A one-word rejection ("passwords") must match the whole word, not a prefix ("password-reset emails").
+  if (stems.length === 1) {
+    const word = tokens(phrase).find((t) => t.length >= 4);
+    return tokens(sentence).includes(word);
+  }
   const words = tokens(sentence).map(stem);
   const hits = stems.filter((s) => words.includes(s)).length;
   return stems.length === 1 ? hits === 1 && stems[0].length >= 5 : hits >= Math.min(2, stems.length);
@@ -60,6 +65,18 @@ function exempted(decision, workText) {
   const partnerFacing = /\b(partner|public)/.test(work.replace(/\b(not|never|no)\b[^.]{0,30}\b(partner|public)\w*/g, '')) || /파트너/.test(work);
   if (/internal/.test(exc) && /\binternal\b|사내|내부/.test(work) && !partnerFacing) return true;
   return false;
+}
+
+/** One-sentence reason, naming the paraphrase as the author wrote it ("Amazon MSK is Kafka, …"). */
+function explain(best, chosen) {
+  const m = best.alias ? new RegExp(escape(best.alias), 'i').exec(best.s) : null;
+  const written = m ? m[0] : best.tech;
+  const named = written.toLowerCase() === String(best.tech).toLowerCase() ? best.tech : `${written} is ${best.tech}, which`;
+  if (best.relation === 'revisits') {
+    return named === best.tech ? `${best.tech} was explicitly rejected in this decision.` : `${named} was explicitly rejected in this decision.`;
+  }
+  if (!best.alias) return `This decision rules this out: "${best.tech}".`;
+  return `The team chose ${[...chosen].join(', ')} for this; this work uses ${named === best.tech ? best.tech : `${written} (${best.tech})`}.`;
 }
 
 export function ruleCheck(workText, decisions) {
@@ -87,9 +104,9 @@ export function ruleCheck(workText, decisions) {
       for (const t of mentionedTechs(s)) {
         if (negatedOrLeaving(s, t.alias)) continue;
         if (rejectedTechs.has(t.name)) {
-          best = best || { relation: 'revisits', s, tech: t.name };
+          best = best || { relation: 'revisits', s, tech: t.name, alias: t.alias };
         } else if (chosenCats.has(t.category) && !chosen.has(t.name)) {
-          best = best || { relation: 'conflicts', s, tech: t.name };
+          best = best || { relation: 'conflicts', s, tech: t.name, alias: t.alias };
         }
       }
       if (!best) {
@@ -120,10 +137,7 @@ export function ruleCheck(workText, decisions) {
       decisionId: d.id,
       relation: best.relation,
       workQuote: best.s.replace(/[.\s]+$/, ''),
-      explanation:
-        best.relation === 'revisits'
-          ? `"${best.tech}" was explicitly rejected in this decision.`
-          : `The team chose ${[...chosen].join(', ')} here; this work uses ${best.tech}.`,
+      explanation: explain(best, chosen),
       decisionTitle: d.title,
       decision: d.decision,
       decisionQuote: d.quote,
