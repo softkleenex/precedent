@@ -67,6 +67,9 @@ function exempted(decision, workText) {
   return false;
 }
 
+// Bump when rule behaviour changes so cached issue checks are recomputed.
+export const RULES_VERSION = 3;
+
 /** One-sentence reason, naming the paraphrase as the author wrote it ("Amazon MSK is Kafka, …"). */
 function explain(best, chosen) {
   const m = best.alias ? new RegExp(escape(best.alias), 'i').exec(best.s) : null;

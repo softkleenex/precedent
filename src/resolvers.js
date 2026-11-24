@@ -7,6 +7,7 @@ import { syncPage } from './lib/extract.js';
 import { readIssueText } from './lib/jira.js';
 import { getCachedCheck, getSettings, getStats, listDecisions, saveSettings, setCachedCheck, removePage } from './lib/store.js';
 import { hash } from './lib/text.js';
+import { RULES_VERSION } from './lib/rules.js';
 
 const resolver = new Resolver();
 
@@ -19,7 +20,7 @@ resolver.define('getIssueCheck', async ({ payload, context }) => {
   if (!issueKey) throw new Error('No issue in context');
   // Read as the viewing user so we never show content they can't see.
   const text = await readIssueText(issueKey, { asUser: true });
-  const textHash = hash(text);
+  const textHash = hash(`${RULES_VERSION}:${text}`);
   const cached = await getCachedCheck(issueKey);
   if (!payload?.force && cached?.hash === textHash) return { ...cached.result, checkedAt: cached.at, cached: true };
 

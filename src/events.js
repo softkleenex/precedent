@@ -6,6 +6,7 @@ import { syncPage } from './lib/extract.js';
 import { addFindingsComment, readIssueText } from './lib/jira.js';
 import { getPageRecord, getSettings, removePage, setCachedCheck } from './lib/store.js';
 import { hash } from './lib/text.js';
+import { RULES_VERSION } from './lib/rules.js';
 
 /** Confluence page created/updated: re-extract if it is (or was) a decision page. */
 export async function onPageChanged(event) {
@@ -34,7 +35,7 @@ export async function onIssueCreated(event) {
 
   const text = await readIssueText(issueKey);
   const result = await checkAgainstDecisions(text);
-  await setCachedCheck(issueKey, { hash: hash(text), result, at: new Date().toISOString() });
+  await setCachedCheck(issueKey, { hash: hash(`${RULES_VERSION}:${text}`), result, at: new Date().toISOString() });
   console.log(`Checked ${issueKey}: ${result.verdict}, ${result.findings.length} findings`);
   if (result.verdict === 'conflict') {
     await addFindingsComment(issueKey, result.findings);
