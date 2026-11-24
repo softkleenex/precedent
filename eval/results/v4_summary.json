@@ -1,0 +1,62 @@
+{
+ "claude-haiku-4-5-20251001": {
+  "precision": 0.976,
+  "recall": 0.984,
+  "f1": 0.98,
+  "case_accuracy": 0.99,
+  "tp": 124,
+  "fp": 3,
+  "fn": 2,
+  "moderated": 3,
+  "errors": 3,
+  "p50_ms": 1639,
+  "max_ms": 4358,
+  "input_tokens": 565543,
+  "output_tokens": 21438
+ },
+ "claude-haiku-5-5": {
+  "precision": 0.962,
+  "recall": 0.992,
+  "f1": 0.977,
+  "case_accuracy": 0.975,
+  "tp": 125,
+  "fp": 5,
+  "fn": 1,
+  "moderated": 3,
+  "errors": 3,
+  "p50_ms": 1532,
+  "max_ms": 7747,
+  "input_tokens": 747276,
+  "output_tokens": 29864
+ },
+ "claude-sonnet-5-5": {
+  "precision": 1.0,
+  "recall": 0.984,
+  "f1": 0.992,
+  "case_accuracy": 0.99,
+  "tp": 124,
+  "fp": 0,
+  "fn": 2,
+  "moderated": 3,
+  "errors": 3,
+  "p50_ms": 1694,
+  "max_ms": 3634,
+  "input_tokens": 721900,
+  "output_tokens": 33381
+ },
+ "claude-opus-5-5": {
+  "precision": 1.0,
+  "recall": 0.984,
+  "f1": 0.992,
+  "case_accuracy": 0.99,
+  "tp": 124,
+  "fp": 0,
+  "fn": 2,
+  "moderated": 3,
+  "errors": 3,
+  "p50_ms": 4594,
+  "max_ms": 18779,
+  "input_tokens": 721964,
+  "output_tokens": 45346
+ }
+}

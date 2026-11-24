@@ -1,0 +1,17 @@
+{
+ "claude-haiku-5-5": {
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "case_accuracy": 1.0,
+  "tp": 42,
+  "fp": 0,
+  "fn": 0,
+  "moderated": 1,
+  "errors": 0,
+  "p50_ms": 1642,
+  "max_ms": 5665,
+  "input_tokens": 217942,
+  "output_tokens": 9872
+ }
+}

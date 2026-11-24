@@ -1,0 +1,109 @@
+[
+ {
+  "id": "e01",
+  "title": "Team retro 2026-11-02",
+  "text": "What went well\n- Release went smoothly.\nWhat didn't\n- On-call was noisy.\nIdeas\n- Maybe we should try Kafka someday? (no agreement)\n- Someone suggested switching to Go.",
+  "expect": {
+   "count": 0
+  }
+ },
+ {
+  "id": "e02",
+  "title": "ADR-020: Payments webhooks are signed with HMAC-SHA256",
+  "text": "Status: Accepted. Date: 2026-09-01.\nDecision\nAll outgoing webhooks are signed with HMAC-SHA256 using a per-partner secret, sent in the Tally-Signature header. We rejected mutual TLS because partners found certificate rotation too hard.\nConsequences\nSecrets rotate every 90 days.",
+  "expect": {
+   "count": 1,
+   "must": [
+    [
+     "hmac"
+    ]
+   ],
+   "rejected": [
+    [
+     "mutual tls",
+     "mtls"
+    ]
+   ],
+   "countMax": 2
+  },
+  "note": "\"Secrets rotate every 90 days\" is a defensible second decision"
+ },
+ {
+  "id": "e03",
+  "title": "ADR-003 (old): Use Redux for all state",
+  "text": "Status: Superseded by ADR-005 on 2026-06-17.\nDecision (2025-03-10): We use Redux for all client state, including server data.",
+  "expect": {
+   "count": 1,
+   "status": "superseded"
+  }
+ },
+ {
+  "id": "e04",
+  "title": "2026-11-10 Architecture review",
+  "text": "Attendees: Platform, Payments, Risk.\nNotes\n- Risk wants faster fraud scoring.\nDecisions\n1. Fraud scoring stays synchronous inside the transfer request; we will not move it to an async queue because a transfer must not commit before scoring.\n2. Scores are cached for at most 60 seconds in Redis.\n3. We will re-evaluate a dedicated fraud service in Q2 2027.\nAction items\n- Benchmark scoring latency (Risk).",
+  "expect": {
+   "count": 2,
+   "countMax": 3,
+   "must": [
+    [
+     "synchronous",
+     "sync"
+    ],
+    [
+     "60 seconds",
+     "60s"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "e05",
+  "title": "ADR-021: 고객 알림은 카카오 알림톡으로 발송",
+  "text": "상태: 승인됨. 날짜: 2026-10-05.\n결정\n고객 알림(송금 완료, 정산 완료)은 카카오 알림톡으로 발송한다. SMS는 비용이 높아 알림톡 실패 시 대체 발송에만 사용한다. 푸시 알림 단독 사용은 앱 미설치 고객 때문에 기각했다.",
+  "expect": {
+   "count": 1,
+   "countMax": 2,
+   "must": [
+    [
+     "알림톡",
+     "kakao"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "e06",
+  "title": "Proposal: adopt Temporal for workflows",
+  "text": "Status: Proposed (not yet agreed). We propose adopting Temporal for long-running settlement workflows. Discussion scheduled for 2026-12-01.",
+  "expect": {
+   "count": 1,
+   "status": "proposed"
+  }
+ },
+ {
+  "id": "e07",
+  "title": "Coding conventions",
+  "text": "Use black for formatting. Use ruff for linting. Type hints are required on public functions. Prefer dataclasses over dicts for structured data.",
+  "expect": {
+   "countMin": 0,
+   "countMax": 4
+  }
+ },
+ {
+  "id": "e08",
+  "title": "ADR-022: No ORMs in the reporting service",
+  "text": "Context: reporting queries are complex and hand-tuned.\nDecision: the reporting service uses raw SQL through psycopg; SQLAlchemy ORM is not used there. The ledger service keeps SQLAlchemy.\nStatus: accepted 2026-07-21.",
+  "expect": {
+   "count": 1,
+   "must": [
+    [
+     "raw sql",
+     "psycopg"
+    ]
+   ],
+   "exceptionsMust": [
+    "ledger"
+   ]
+  }
+ }
+]

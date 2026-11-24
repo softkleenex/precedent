@@ -62,7 +62,8 @@ export async function checkAgainstDecisions(workText, { model, decisions } = {})
   const all = decisions || (await listDecisions());
   if (all.length === 0) return { verdict: 'no-decisions', findings: [], considered: 0 };
 
-  const candidates = rankDecisions(workText, all, 25);
+  // Send at most 15 keyword-ranked decisions to keep prompts (and cost) small.
+  const candidates = rankDecisions(workText, all, 15);
   const byId = Object.fromEntries(all.map((d) => [d.id, d]));
 
   let findings;

@@ -1,0 +1,746 @@
+[
+ [
+  "e01",
+  {
+   "verified": [],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e02",
+  {
+   "verified": [
+    {
+     "title": "Payments webhooks signed with HMAC-SHA256",
+     "decision": "All outgoing webhooks are signed with HMAC-SHA256 using a per-partner secret, sent in the Tally-Signature header.",
+     "alternativesRejected": [
+      "Mutual TLS"
+     ],
+     "rationale": "Partners found certificate rotation too hard.",
+     "status": "accepted",
+     "date": "2026-09-01",
+     "quote": "All outgoing webhooks are signed with HMAC-SHA256 using a per-partner secret, sent in the Tally-Signature header. We rejected mutual TLS because partners found certificate rotation too hard.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "webhooks",
+      "hmac-sha256",
+      "tally-signature",
+      "payments",
+      "mutual tls",
+      "partner secrets",
+      "signing"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-020: Payments webhooks are signed with HMAC-SHA256",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:00.224Z"
+    },
+    {
+     "title": "Webhook secrets rotate every 90 days",
+     "decision": "Per-partner webhook signing secrets rotate every 90 days.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "2026-09-01",
+     "quote": "Secrets rotate every 90 days.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "webhook secrets",
+      "secret rotation",
+      "hmac",
+      "partner secrets",
+      "payments"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-020: Payments webhooks are signed with HMAC-SHA256",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:00.225Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  [
+   "count 2 not in [1,1]"
+  ]
+ ],
+ [
+  "e03",
+  {
+   "verified": [
+    {
+     "title": "Client state management: Redux for all state",
+     "decision": "We use Redux for all client state, including server data.",
+     "alternativesRejected": [],
+     "rationale": "The page does not state a rationale.",
+     "status": "superseded",
+     "date": "2025-03-10",
+     "quote": "We use Redux for all client state, including server data.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "redux",
+      "client state",
+      "state management",
+      "server data",
+      "frontend"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-003 (old): Use Redux for all state",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:23:59.280Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e04",
+  {
+   "verified": [
+    {
+     "title": "Fraud scoring stays synchronous in transfer request",
+     "decision": "Fraud scoring remains synchronous inside the transfer request and will not be moved to an async queue.",
+     "alternativesRejected": [
+      "Moving fraud scoring to an async queue"
+     ],
+     "rationale": "A transfer must not commit before scoring.",
+     "status": "accepted",
+     "date": "2026-11-10",
+     "quote": "Fraud scoring stays synchronous inside the transfer request; we will not move it to an async queue because a transfer must not commit before scoring.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "fraud scoring",
+      "transfer request",
+      "synchronous",
+      "async queue",
+      "payments",
+      "risk"
+     ],
+     "pageId": "eval",
+     "pageTitle": "2026-11-10 Architecture review",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:01.995Z"
+    },
+    {
+     "title": "Fraud scores cached in Redis for at most 60 seconds",
+     "decision": "Scores are cached for at most 60 seconds in Redis.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "2026-11-10",
+     "quote": "Scores are cached for at most 60 seconds in Redis.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "redis",
+      "cache",
+      "fraud scoring",
+      "ttl",
+      "caching"
+     ],
+     "pageId": "eval",
+     "pageTitle": "2026-11-10 Architecture review",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:01.995Z"
+    },
+    {
+     "title": "Dedicated fraud service to be re-evaluated in Q2 2027",
+     "decision": "The team will re-evaluate a dedicated fraud service in Q2 2027.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "proposed",
+     "date": "2026-11-10",
+     "quote": "We will re-evaluate a dedicated fraud service in Q2 2027.",
+     "exceptions": "",
+     "revisitWhen": "Q2 2027",
+     "keywords": [
+      "fraud service",
+      "fraud scoring",
+      "microservice",
+      "architecture",
+      "risk"
+     ],
+     "pageId": "eval",
+     "pageTitle": "2026-11-10 Architecture review",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:01.995Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e05",
+  {
+   "verified": [
+    {
+     "title": "고객 알림 채널: 카카오 알림톡",
+     "decision": "고객 알림(송금 완료, 정산 완료)은 카카오 알림톡으로 발송한다.",
+     "alternativesRejected": [
+      "푸시 알림 단독 사용",
+      "SMS를 주 채널로 사용"
+     ],
+     "rationale": "SMS는 비용이 높고, 푸시 알림 단독 사용은 앱 미설치 고객에게 도달하지 못하기 때문이다.",
+     "status": "accepted",
+     "date": "2026-10-05",
+     "quote": "고객 알림(송금 완료, 정산 완료)은 카카오 알림톡으로 발송한다. SMS는 비용이 높아 알림톡 실패 시 대체 발송에만 사용한다.",
+     "exceptions": "알림톡 발송이 실패한 경우 SMS로 대체 발송할 수 있다.",
+     "revisitWhen": "",
+     "keywords": [
+      "카카오 알림톡",
+      "알림톡",
+      "sms",
+      "푸시 알림",
+      "고객 알림",
+      "송금 완료",
+      "정산 완료"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-021: 고객 알림은 카카오 알림톡으로 발송",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:02.353Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e06",
+  {
+   "verified": [
+    {
+     "title": "Adopt Temporal for long-running settlement workflows",
+     "decision": "Proposal to adopt Temporal for long-running settlement workflows, not yet agreed.",
+     "alternativesRejected": [],
+     "rationale": "The page does not state a rationale.",
+     "status": "proposed",
+     "date": "",
+     "quote": "We propose adopting Temporal for long-running settlement workflows.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "temporal",
+      "workflows",
+      "settlement",
+      "long-running workflows",
+      "workflow orchestration"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Proposal: adopt Temporal for workflows",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:01.885Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e07",
+  {
+   "verified": [
+    {
+     "title": "Code formatter: black",
+     "decision": "The team uses black for code formatting.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "",
+     "quote": "Use black for formatting.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "black",
+      "formatting",
+      "python",
+      "code style"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Coding conventions",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:04.564Z"
+    },
+    {
+     "title": "Linter: ruff",
+     "decision": "The team uses ruff for linting.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "",
+     "quote": "Use ruff for linting.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "ruff",
+      "linting",
+      "python",
+      "code style"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Coding conventions",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:04.564Z"
+    },
+    {
+     "title": "Type hints required on public functions",
+     "decision": "Type hints are required on public functions.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "",
+     "quote": "Type hints are required on public functions.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "type hints",
+      "typing",
+      "public functions",
+      "python"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Coding conventions",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:04.564Z"
+    },
+    {
+     "title": "Dataclasses preferred over dicts for structured data",
+     "decision": "Prefer dataclasses over dicts for structured data.",
+     "alternativesRejected": [
+      "dicts for structured data"
+     ],
+     "rationale": "",
+     "status": "accepted",
+     "date": "",
+     "quote": "Prefer dataclasses over dicts for structured data.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "dataclasses",
+      "dict",
+      "structured data",
+      "python"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Coding conventions",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:04.564Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e08",
+  {
+   "verified": [
+    {
+     "title": "Reporting service: raw SQL via psycopg, no SQLAlchemy ORM",
+     "decision": "The reporting service uses raw SQL through psycopg, and SQLAlchemy ORM is not used there.",
+     "alternativesRejected": [
+      "SQLAlchemy ORM in the reporting service"
+     ],
+     "rationale": "Reporting queries are complex and hand-tuned.",
+     "status": "accepted",
+     "date": "2026-07-21",
+     "quote": "Decision: the reporting service uses raw SQL through psycopg; SQLAlchemy ORM is not used there.",
+     "exceptions": "The ledger service keeps SQLAlchemy.",
+     "revisitWhen": "",
+     "keywords": [
+      "reporting service",
+      "psycopg",
+      "raw sql",
+      "sqlalchemy",
+      "orm",
+      "adr-022"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-022: No ORMs in the reporting service",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:03.964Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e01",
+  {
+   "verified": [],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e02",
+  {
+   "verified": [
+    {
+     "title": "Payments webhooks signed with HMAC-SHA256",
+     "decision": "All outgoing webhooks are signed with HMAC-SHA256 using a per-partner secret, sent in the Tally-Signature header.",
+     "alternativesRejected": [
+      "Mutual TLS"
+     ],
+     "rationale": "Partners found certificate rotation too hard.",
+     "status": "accepted",
+     "date": "2026-09-01",
+     "quote": "All outgoing webhooks are signed with HMAC-SHA256 using a per-partner secret, sent in the Tally-Signature header. We rejected mutual TLS because partners found certificate rotation too hard.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "webhooks",
+      "hmac-sha256",
+      "tally-signature",
+      "signing",
+      "mutual tls",
+      "partner secrets",
+      "payments"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-020: Payments webhooks are signed with HMAC-SHA256",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:06.168Z"
+    },
+    {
+     "title": "Webhook secrets rotate every 90 days",
+     "decision": "Per-partner webhook signing secrets rotate every 90 days.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "2026-09-01",
+     "quote": "Secrets rotate every 90 days.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "webhooks",
+      "secret rotation",
+      "hmac",
+      "partner secrets",
+      "payments"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-020: Payments webhooks are signed with HMAC-SHA256",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:06.168Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  [
+   "count 2 not in [1,1]"
+  ]
+ ],
+ [
+  "e03",
+  {
+   "verified": [
+    {
+     "title": "Client state management: Redux for all state",
+     "decision": "We use Redux for all client state, including server data.",
+     "alternativesRejected": [],
+     "rationale": "The page does not state a rationale.",
+     "status": "superseded",
+     "date": "2025-03-10",
+     "quote": "We use Redux for all client state, including server data.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "redux",
+      "client state",
+      "state management",
+      "server data",
+      "frontend"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-003 (old): Use Redux for all state",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:05.792Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e04",
+  {
+   "verified": [
+    {
+     "title": "Fraud scoring stays synchronous in transfer request",
+     "decision": "Fraud scoring stays synchronous inside the transfer request and will not be moved to an async queue.",
+     "alternativesRejected": [
+      "Moving fraud scoring to an async queue"
+     ],
+     "rationale": "A transfer must not commit before scoring.",
+     "status": "accepted",
+     "date": "2026-11-10",
+     "quote": "Fraud scoring stays synchronous inside the transfer request; we will not move it to an async queue because a transfer must not commit before scoring.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "fraud scoring",
+      "transfer request",
+      "synchronous",
+      "async queue",
+      "payments",
+      "risk"
+     ],
+     "pageId": "eval",
+     "pageTitle": "2026-11-10 Architecture review",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:07.268Z"
+    },
+    {
+     "title": "Fraud score cache TTL in Redis",
+     "decision": "Fraud scores are cached in Redis for at most 60 seconds.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "2026-11-10",
+     "quote": "Scores are cached for at most 60 seconds in Redis.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "fraud scoring",
+      "redis",
+      "cache",
+      "ttl",
+      "60 seconds"
+     ],
+     "pageId": "eval",
+     "pageTitle": "2026-11-10 Architecture review",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:07.268Z"
+    },
+    {
+     "title": "Dedicated fraud service to be re-evaluated in Q2 2027",
+     "decision": "The team will re-evaluate a dedicated fraud service in Q2 2027.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "proposed",
+     "date": "2026-11-10",
+     "quote": "We will re-evaluate a dedicated fraud service in Q2 2027.",
+     "exceptions": "",
+     "revisitWhen": "Q2 2027",
+     "keywords": [
+      "fraud service",
+      "fraud scoring",
+      "microservice",
+      "architecture",
+      "risk"
+     ],
+     "pageId": "eval",
+     "pageTitle": "2026-11-10 Architecture review",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:07.268Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e05",
+  {
+   "verified": [
+    {
+     "title": "고객 알림 발송 채널: 카카오 알림톡",
+     "decision": "고객 알림(송금 완료, 정산 완료)은 카카오 알림톡으로 발송한다.",
+     "alternativesRejected": [
+      "푸시 알림 단독 사용",
+      "SMS 단독 사용"
+     ],
+     "rationale": "SMS는 비용이 높고, 푸시 알림 단독 사용은 앱 미설치 고객 때문에 기각했다.",
+     "status": "accepted",
+     "date": "2026-10-05",
+     "quote": "고객 알림(송금 완료, 정산 완료)은 카카오 알림톡으로 발송한다. SMS는 비용이 높아 알림톡 실패 시 대체 발송에만 사용한다.",
+     "exceptions": "SMS는 알림톡 발송 실패 시 대체 발송 수단으로만 사용한다.",
+     "revisitWhen": "",
+     "keywords": [
+      "카카오 알림톡",
+      "알림톡",
+      "sms",
+      "푸시 알림",
+      "고객 알림",
+      "송금 완료",
+      "정산 완료"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-021: 고객 알림은 카카오 알림톡으로 발송",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:07.910Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e06",
+  {
+   "verified": [
+    {
+     "title": "Adopt Temporal for long-running settlement workflows",
+     "decision": "The team proposes adopting Temporal for long-running settlement workflows, but this is not yet agreed.",
+     "alternativesRejected": [],
+     "rationale": "The page only states a proposal; discussion is scheduled for 2026-12-01 and no agreement has been reached.",
+     "status": "proposed",
+     "date": "",
+     "quote": "We propose adopting Temporal for long-running settlement workflows.",
+     "exceptions": "",
+     "revisitWhen": "Discussion scheduled for 2026-12-01.",
+     "keywords": [
+      "temporal",
+      "workflow",
+      "settlement",
+      "long-running workflows",
+      "orchestration"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Proposal: adopt Temporal for workflows",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:08.107Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e07",
+  {
+   "verified": [
+    {
+     "title": "Code formatter: black",
+     "decision": "Use black for code formatting.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "",
+     "quote": "Use black for formatting.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "black",
+      "formatting",
+      "python",
+      "code style"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Coding conventions",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:12.464Z"
+    },
+    {
+     "title": "Linter: ruff",
+     "decision": "Use ruff for linting.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "",
+     "quote": "Use ruff for linting.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "ruff",
+      "linting",
+      "python",
+      "code style"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Coding conventions",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:12.464Z"
+    },
+    {
+     "title": "Type hints required on public functions",
+     "decision": "Type hints are required on public functions.",
+     "alternativesRejected": [],
+     "rationale": "",
+     "status": "accepted",
+     "date": "",
+     "quote": "Type hints are required on public functions.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "type hints",
+      "typing",
+      "public functions",
+      "python"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Coding conventions",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:12.464Z"
+    },
+    {
+     "title": "Prefer dataclasses over dicts for structured data",
+     "decision": "Prefer dataclasses over dicts for structured data.",
+     "alternativesRejected": [
+      "dicts for structured data"
+     ],
+     "rationale": "",
+     "status": "accepted",
+     "date": "",
+     "quote": "Prefer dataclasses over dicts for structured data.",
+     "exceptions": "",
+     "revisitWhen": "",
+     "keywords": [
+      "dataclasses",
+      "dict",
+      "structured data",
+      "python"
+     ],
+     "pageId": "eval",
+     "pageTitle": "Coding conventions",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:12.464Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ],
+ [
+  "e08",
+  {
+   "verified": [
+    {
+     "title": "Reporting service: raw SQL via psycopg, no SQLAlchemy ORM",
+     "decision": "The reporting service uses raw SQL through psycopg, and SQLAlchemy ORM is not used there.",
+     "alternativesRejected": [
+      "SQLAlchemy ORM in the reporting service"
+     ],
+     "rationale": "Reporting queries are complex and hand-tuned.",
+     "status": "accepted",
+     "date": "2026-07-21",
+     "quote": "Decision: the reporting service uses raw SQL through psycopg; SQLAlchemy ORM is not used there.",
+     "exceptions": "The ledger service keeps SQLAlchemy.",
+     "revisitWhen": "",
+     "keywords": [
+      "reporting service",
+      "psycopg",
+      "raw sql",
+      "sqlalchemy",
+      "orm",
+      "ledger service"
+     ],
+     "pageId": "eval",
+     "pageTitle": "ADR-022: No ORMs in the reporting service",
+     "pageUrl": "",
+     "extractedAt": "2026-11-24T13:24:09.921Z"
+    }
+   ],
+   "droppedCount": 0
+  },
+  []
+ ]
+]

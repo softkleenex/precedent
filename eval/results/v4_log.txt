@@ -1,0 +1,36 @@
+claude-haiku-4-5-20251001 {"precision": 0.976, "recall": 0.984, "f1": 0.98, "case_accuracy": 0.99, "tp": 124, "fp": 3, "fn": 2, "moderated": 3, "errors": 3, "p50_ms": 1639, "max_ms": 4358, "input_tokens": 565543, "output_tokens": 21438}
+   MISS c42 expected ['X01'] got ['164005:1', 'X01'] 
+   MISS h16 expected ['X07'] got [] 
+   MISS c42 expected ['X01'] got ['164005:1', 'X01'] 
+   MISS h16 expected ['X07'] got [] 
+   MISS c38 expected [] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-haiku-4-5-20251001-v1:0. Please try again later.","ms":71}
+   MISS c39 expected ['491523:1'] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-haiku-4-5-20251001-v1:0. Please try again later.","ms":41}
+   MISS c40 expected ['X10'] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-haiku-4-5-20251001-v1:0. Please try again later.","ms":15}
+   MISS c42 expected ['X01'] got ['164005:1', 'X01'] 
+   MISS h16 expected ['X07'] got [] 
+claude-haiku-5-5 {"precision": 0.962, "recall": 0.992, "f1": 0.977, "case_accuracy": 0.975, "tp": 125, "fp": 5, "fn": 1, "moderated": 3, "errors": 3, "p50_ms": 1532, "max_ms": 7747, "input_tokens": 747276, "output_tokens": 29864}
+   MISS h16 expected ['X07'] got [] 
+   MISS h18 expected [] got ['X11'] 
+   MISS h19 expected [] got ['X05'] 
+   MISS h16 expected ['X07'] got [] 
+   MISS h19 expected [] got ['X05'] 
+   MISS h21 expected [] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-haiku-5-5. Please try again later.","ms":66}
+   MISS h22 expected [] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-haiku-5-5. Please try again later.","ms":65}
+   MISS h23 expected ['X12'] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-haiku-5-5. Please try again later.","ms":15}
+   MISS h01 expected ['458753:1'] got ['458753:1', '491523:2'] 
+   MISS h16 expected ['X07'] got [] 
+   MISS h19 expected [] got ['X05'] 
+claude-sonnet-5-5 {"precision": 1.0, "recall": 0.984, "f1": 0.992, "case_accuracy": 0.99, "tp": 124, "fp": 0, "fn": 2, "moderated": 3, "errors": 3, "p50_ms": 1694, "max_ms": 3634, "input_tokens": 721900, "output_tokens": 33381}
+   MISS h16 expected ['X07'] got [] 
+   MISS h16 expected ['X07'] got [] 
+   MISS c01 expected ['65699:1'] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-sonnet-5-5. Please try again later.","ms":69}
+   MISS c02 expected ['458753:1'] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-sonnet-5-5. Please try again later.","ms":13}
+   MISS c03 expected [] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-sonnet-5-5. Please try again later.","ms":11}
+   MISS h16 expected ['X07'] got [] 
+claude-opus-5-5 {"precision": 1.0, "recall": 0.984, "f1": 0.992, "case_accuracy": 0.99, "tp": 124, "fp": 0, "fn": 2, "moderated": 3, "errors": 3, "p50_ms": 4594, "max_ms": 18779, "input_tokens": 721964, "output_tokens": 45346}
+   MISS h16 expected ['X07'] got [] 
+   MISS h16 expected ['X07'] got [] 
+   MISS h19 expected [] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-opus-5-5. Please try again later.","ms":35}
+   MISS h23 expected ['X12'] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-opus-5-5. Please try again later.","ms":24}
+   MISS h24 expected ['X03'] got [] 500: {"error":"Forge LLM token usage limit exceeded. This tenant (ari:cloud:jira::site/98f3009d-77c4-4561-9d49-85c1207240a3) has reached its limit of 500000 tokens for model anthropic.claude-opus-5-5. Please try again later.","ms":21}
+   MISS h16 expected ['X07'] got [] 

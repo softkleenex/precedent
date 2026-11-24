@@ -6,11 +6,12 @@
 import { chat } from '@forge/llm';
 import kvs from '@forge/kvs';
 
-// Haiku is fast and cheap; quality is protected by quote verification downstream.
+// Model chosen from eval/RESULTS.md: Haiku 5.5 is the cheapest model (1/4 of Sonnet) with F1 0.977;
+// precision is protected downstream by quote verification.
 export const MODEL = 'claude-haiku-5-5';
 
 // Forge LLM usage is billed to the app developer, so we cap calls per site per day.
-const DAILY_CALL_LIMIT = 300;
+const DAILY_CALL_LIMIT = 100;
 
 // Token usage of the most recent call (read by the evaluation endpoint).
 export let lastUsage = null;
