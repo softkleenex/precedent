@@ -12,7 +12,17 @@ export const MODEL = 'claude-haiku-5-5';
 // Forge LLM usage is billed to the app developer, so we cap calls per site per day.
 const DAILY_CALL_LIMIT = 300;
 
+// Token usage of the most recent call (read by the evaluation endpoint).
+export let lastUsage = null;
+
+// The evaluation endpoint switches the daily cap off for the length of one run.
+let budgetBypass = false;
+export function setBudgetBypass(on) {
+  budgetBypass = on;
+}
+
 async function consumeBudget() {
+  if (budgetBypass) return;
   const day = new Date().toISOString().slice(0, 10);
   const key = `usage:${day}`;
   const used = (await kvs.get(key)) || 0;
@@ -30,10 +40,10 @@ async function consumeBudget() {
  * @param {string} name    - tool name shown to the model
  * @returns {Promise<object>} the parsed arguments the model produced
  */
-export async function structuredCall({ system, user, schema, name, maxTokens = 2000 }) {
+export async function structuredCall({ system, user, schema, name, maxTokens = 2000, model = MODEL }) {
   await consumeBudget();
   const response = await chat({
-    model: MODEL,
+    model,
     max_completion_tokens: maxTokens,
     messages: [
       { role: 'system', content: system },
@@ -43,6 +53,7 @@ export async function structuredCall({ system, user, schema, name, maxTokens = 2
     tool_choice: { type: 'function', function: { name } },
   });
 
+  lastUsage = response?.usage || null;
   const call = response?.choices?.[0]?.message?.tool_calls?.[0];
   if (!call) throw new Error('The AI model returned no structured answer.');
   // Depending on SDK version, arguments may arrive as an object or a JSON string.

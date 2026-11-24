@@ -89,6 +89,25 @@ function App() {
     );
   }
 
+  if (result.verdict === 'unavailable') {
+    return (
+      <SectionMessage appearance="warning" title="AI check skipped for this issue">
+        <Stack space="space.100">
+          <Text>
+            Atlassian's AI safety filter declined to analyse this issue ({result.reason}). This usually means it contains
+            personal data. Remove it from the description and press Re-check.
+          </Text>
+          {(result.related || []).map((r) => (
+            <Text key={r.decisionId}>
+              Possibly relevant: {r.pageUrl ? <Link href={r.pageUrl} openNewTab>{r.decisionTitle}</Link> : r.decisionTitle}
+            </Text>
+          ))}
+          <Button onClick={() => run(true)}>Re-check</Button>
+        </Stack>
+      </SectionMessage>
+    );
+  }
+
   const problems = result.findings.filter((f) => f.relation !== 'follows').length;
   return (
     <Stack space="space.150">

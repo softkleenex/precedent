@@ -1,0 +1,1273 @@
+{
+ "model": "claude-sonnet-5-5",
+ "score": {
+  "precision": 0.964,
+  "recall": 0.964,
+  "f1": 0.964,
+  "case_accuracy": 0.978,
+  "tp": 27,
+  "fp": 1,
+  "fn": 1,
+  "errors": 0,
+  "p50_ms": 1547,
+  "max_ms": 2344,
+  "input_tokens": 161497,
+  "output_tokens": 6953
+ },
+ "rows": [
+  {
+   "id": "c01",
+   "expected": [
+    "65699:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "65699:1",
+    "65699:2"
+   ],
+   "findings": [
+    {
+     "decisionId": "65699:2",
+     "relation": "conflicts",
+     "workQuote": "so we can store arbitrary fields without migrations",
+     "explanation": "The work avoids Alembic migrations, but schema changes to the PostgreSQL database must go through them.",
+     "decisionTitle": "Schema changes via Alembic migrations",
+     "decision": "Schema changes to the PostgreSQL database go through Alembic migrations.",
+     "decisionQuote": "Schema changes go through Alembic migrations.",
+     "pageTitle": "ADR-001: PostgreSQL as the system of record",
+     "date": "2026-02-11"
+    },
+    {
+     "decisionId": "65699:1",
+     "relation": "revisits",
+     "workQuote": "Let us move transaction history into a MongoDB collection so we can store arbitrary fields without migrations.",
+     "explanation": "MongoDB for transaction data was explicitly rejected; PostgreSQL stays the system of record, and flexible metadata should go in a JSONB column.",
+     "decisionTitle": "System of record: PostgreSQL",
+     "decision": "PostgreSQL is the single system of record for all ledger and account data.",
+     "decisionQuote": "We use PostgreSQL as the single system of record for all ledger and account data. We will not introduce MongoDB or any other document database for ledger, transaction or account data.",
+     "pageTitle": "ADR-001: PostgreSQL as the system of record",
+     "date": "2026-02-11"
+    }
+   ],
+   "ms": 2344,
+   "usage": {
+    "input_tokens": 3611,
+    "output_tokens": 250,
+    "total_tokens": 3861
+   }
+  },
+  {
+   "id": "c02",
+   "expected": [
+    "458753:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "458753:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "458753:1",
+     "relation": "revisits",
+     "workQuote": "set up a Kafka cluster and publish payment.created and payment.settled events to it",
+     "explanation": "The team chose SQS for asynchronous work and explicitly rejected Kafka. Neither revisit trigger (ordered replay across services or more than 5,000 msg/s) is cited.",
+     "decisionTitle": "Asynchronous jobs: Amazon SQS, not Kafka",
+     "decision": "We use Amazon SQS queues for asynchronous work.",
+     "decisionQuote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
+     "pageTitle": "ADR-002: Use SQS for asynchronous jobs, not Kafka",
+     "date": "2026-03-04"
+    }
+   ],
+   "ms": 1647,
+   "usage": {
+    "input_tokens": 3603,
+    "output_tokens": 171,
+    "total_tokens": 3774
+   }
+  },
+  {
+   "id": "c03",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "65699:2",
+     "relation": "follows",
+     "workQuote": "Add a btree index on ledger_entries.created_at via an Alembic migration.",
+     "explanation": "The schema change (new index) is made through an Alembic migration as required.",
+     "decisionTitle": "Schema changes via Alembic migrations",
+     "decision": "Schema changes to the PostgreSQL database go through Alembic migrations.",
+     "decisionQuote": "Schema changes go through Alembic migrations.",
+     "pageTitle": "ADR-001: PostgreSQL as the system of record",
+     "date": "2026-02-11"
+    },
+    {
+     "decisionId": "X11",
+     "relation": "follows",
+     "workQuote": "Add index on ledger_entries.created_at",
+     "explanation": "This touches the ledger package, so the PR needs two approvals, one from the Platform team.",
+     "decisionTitle": "Two approvals for ledger code changes",
+     "decision": "Pull requests that touch the ledger package need two approvals, one from the Platform team.",
+     "decisionQuote": "Pull requests that touch the ledger package need two approvals, one from the Platform team.",
+     "pageTitle": "Engineering handbook: code review",
+     "date": "2026-03-30"
+    }
+   ],
+   "ms": 1677,
+   "usage": {
+    "input_tokens": 3597,
+    "output_tokens": 203,
+    "total_tokens": 3800
+   }
+  },
+  {
+   "id": "c04",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [],
+   "ms": 1117,
+   "usage": {
+    "input_tokens": 3571,
+    "output_tokens": 50,
+    "total_tokens": 3621
+   }
+  },
+  {
+   "id": "c05",
+   "expected": [
+    "164005:1"
+   ],
+   "acceptable": [
+    "164005:2"
+   ],
+   "predicted": [
+    "164005:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "164005:1",
+     "relation": "revisits",
+     "workQuote": "Expose a GraphQL endpoint for partners",
+     "explanation": "The team explicitly rejected GraphQL for the public partner API, which must be REST described by OpenAPI 3.1 under /v1/.",
+     "decisionTitle": "Public partner API style: REST with OpenAPI 3.1",
+     "decision": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/).",
+     "decisionQuote": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/). We decided not to offer GraphQL to partners, because per-field authorization and query cost limits are hard to audit for a regulated payments API.",
+     "pageTitle": "ADR-003: Public partner API is REST with OpenAPI",
+     "date": "2026-04-22"
+    }
+   ],
+   "ms": 1630,
+   "usage": {
+    "input_tokens": 3605,
+    "output_tokens": 145,
+    "total_tokens": 3750
+   }
+  },
+  {
+   "id": "c06",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "164005:1",
+     "relation": "follows",
+     "workQuote": "Only our support staff use this internal tool; it is not exposed to partners.",
+     "explanation": "GraphQL was rejected only for the public partner API; internal tools may use whatever fits, so this is allowed as long as partners don't call it.",
+     "decisionTitle": "Public partner API style: REST with OpenAPI 3.1",
+     "decision": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/).",
+     "decisionQuote": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/). We decided not to offer GraphQL to partners, because per-field authorization and query cost limits are hard to audit for a regulated payments API.",
+     "pageTitle": "ADR-003: Public partner API is REST with OpenAPI",
+     "date": "2026-04-22"
+    }
+   ],
+   "ms": 1576,
+   "usage": {
+    "input_tokens": 3601,
+    "output_tokens": 151,
+    "total_tokens": 3752
+   }
+  },
+  {
+   "id": "c07",
+   "expected": [
+    "458770:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "458770:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "458770:1",
+     "relation": "conflicts",
+     "workQuote": "Let's store bcrypt password hashes in Postgres and build login, password reset and MFA ourselves.",
+     "explanation": "Auth0 (OIDC) is the decided sign-in path, and storing passwords in our own database and building our own login, reset and MFA flows were explicitly rejected.",
+     "decisionTitle": "Authentication through Auth0 (OIDC)",
+     "decision": "All user sign-in goes through Auth0 using OIDC.",
+     "decisionQuote": "All user sign-in goes through Auth0 using OIDC. We will not store passwords or build our own login, password reset or MFA flows.",
+     "pageTitle": "ADR-004: Authentication through Auth0 (OIDC)",
+     "date": "2026-05-09"
+    }
+   ],
+   "ms": 1581,
+   "usage": {
+    "input_tokens": 3600,
+    "output_tokens": 173,
+    "total_tokens": 3773
+   }
+  },
+  {
+   "id": "c08",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "458770:1",
+     "relation": "follows",
+     "workQuote": "Enable the Google connection in our Auth0 tenant and show the button on the sign-in page.",
+     "explanation": "Google sign-in is added as an Auth0 connection, so credentials stay out of our database and sign-in still goes through Auth0.",
+     "decisionTitle": "Authentication through Auth0 (OIDC)",
+     "decision": "All user sign-in goes through Auth0 using OIDC.",
+     "decisionQuote": "All user sign-in goes through Auth0 using OIDC. We will not store passwords or build our own login, password reset or MFA flows.",
+     "pageTitle": "ADR-004: Authentication through Auth0 (OIDC)",
+     "date": "2026-05-09"
+    }
+   ],
+   "ms": 1547,
+   "usage": {
+    "input_tokens": 3589,
+    "output_tokens": 155,
+    "total_tokens": 3744
+   }
+  },
+  {
+   "id": "c09",
+   "expected": [
+    "360450:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "360450:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "360450:1",
+     "relation": "conflicts",
+     "workQuote": "manage server state with a new Redux slice",
+     "explanation": "New screens must use TanStack Query for server state; Redux for server state is superseded, so replace the new slice and thunks with TanStack Query hooks.",
+     "decisionTitle": "Frontend server state: TanStack Query",
+     "decision": "New frontend code uses TanStack Query for server state.",
+     "decisionQuote": "New frontend code uses TanStack Query for server state. Redux is superseded and must not be added to new screens; existing Redux slices are migrated when touched.",
+     "pageTitle": "ADR-005: Frontend server state with TanStack Query",
+     "date": "2026-06-17"
+    }
+   ],
+   "ms": 1413,
+   "usage": {
+    "input_tokens": 3588,
+    "output_tokens": 145,
+    "total_tokens": 3733
+   }
+  },
+  {
+   "id": "c10",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "360450:1",
+     "relation": "follows",
+     "workQuote": "Use TanStack Query for the new statements page",
+     "explanation": "New frontend code uses TanStack Query for server state, as the decision requires.",
+     "decisionTitle": "Frontend server state: TanStack Query",
+     "decision": "New frontend code uses TanStack Query for server state.",
+     "decisionQuote": "New frontend code uses TanStack Query for server state. Redux is superseded and must not be added to new screens; existing Redux slices are migrated when touched.",
+     "pageTitle": "ADR-005: Frontend server state with TanStack Query",
+     "date": "2026-06-17"
+    }
+   ],
+   "ms": 1314,
+   "usage": {
+    "input_tokens": 3578,
+    "output_tokens": 121,
+    "total_tokens": 3699
+   }
+  },
+  {
+   "id": "c11",
+   "expected": [
+    "491523:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "491523:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "491523:1",
+     "relation": "conflicts",
+     "workQuote": "retry it up to 3 times with a fresh request id each time",
+     "explanation": "Payout retries must reuse the same Idempotency-Key; a fresh id per retry risks duplicate payouts, which is the failure the decision was made to prevent.",
+     "decisionTitle": "Idempotency-Key required on money-moving endpoints",
+     "decision": "Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+     "decisionQuote": "Decision: every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+     "pageTitle": "2026-10-14 Platform sync — meeting notes",
+     "date": "2026-10-14"
+    }
+   ],
+   "ms": 1913,
+   "usage": {
+    "input_tokens": 3584,
+    "output_tokens": 156,
+    "total_tokens": 3740
+   }
+  },
+  {
+   "id": "c12",
+   "expected": [
+    "491523:2"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "491523:2"
+   ],
+   "findings": [
+    {
+     "decisionId": "491523:2",
+     "relation": "conflicts",
+     "workQuote": "Create a separate notifications microservice",
+     "explanation": "No new microservices are allowed until the ledger monolith has full transfer test coverage; new features should go into the existing ledger service.",
+     "decisionTitle": "No new microservices until ledger has full transfer test coverage",
+     "decision": "No new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+     "decisionQuote": "Decision: no new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+     "pageTitle": "2026-10-14 Platform sync — meeting notes",
+     "date": "2026-10-14"
+    }
+   ],
+   "ms": 1475,
+   "usage": {
+    "input_tokens": 3583,
+    "output_tokens": 136,
+    "total_tokens": 3719
+   }
+  },
+  {
+   "id": "c13",
+   "expected": [
+    "X01"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X01"
+   ],
+   "findings": [
+    {
+     "decisionId": "X01",
+     "relation": "conflicts",
+     "workQuote": "Add fx_rate and converted_amount float columns so we can show converted amounts quickly.",
+     "explanation": "Monetary amounts like converted_amount must be integer minor units with an ISO 4217 currency code, not floats.",
+     "decisionTitle": "Money stored as integer minor units",
+     "decision": "All monetary amounts are stored and transmitted as integers in minor units (cents) together with an ISO 4217 currency code.",
+     "decisionQuote": "All monetary amounts are stored and transmitted as integers in minor units (cents) with an ISO 4217 currency code.",
+     "pageTitle": "ADR-006: Representing money",
+     "date": "2026-01-20"
+    },
+    {
+     "decisionId": "65699:2",
+     "relation": "follows",
+     "workQuote": "Add fx_rate and converted_amount float columns",
+     "explanation": "Adding columns is a schema change, so it must go through an Alembic migration.",
+     "decisionTitle": "Schema changes via Alembic migrations",
+     "decision": "Schema changes to the PostgreSQL database go through Alembic migrations.",
+     "decisionQuote": "Schema changes go through Alembic migrations.",
+     "pageTitle": "ADR-001: PostgreSQL as the system of record",
+     "date": "2026-02-11"
+    }
+   ],
+   "ms": 1836,
+   "usage": {
+    "input_tokens": 3583,
+    "output_tokens": 222,
+    "total_tokens": 3805
+   }
+  },
+  {
+   "id": "c14",
+   "expected": [
+    "X02"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X02"
+   ],
+   "findings": [
+    {
+     "decisionId": "X02",
+     "relation": "conflicts",
+     "workQuote": "Bump the instance class directly in the console tonight; we can sort out the code later.",
+     "explanation": "Infrastructure changes must go through Terraform pull requests; manual console changes are explicitly rejected, so update the instance class in Terraform and open a PR.",
+     "decisionTitle": "Infrastructure as code with Terraform",
+     "decision": "All cloud infrastructure is defined in Terraform and changed only through pull requests.",
+     "decisionQuote": "All cloud infrastructure is defined in Terraform and changed only through pull requests.",
+     "pageTitle": "ADR-007: Infrastructure as code",
+     "date": "2026-02-02"
+    }
+   ],
+   "ms": 1425,
+   "usage": {
+    "input_tokens": 3601,
+    "output_tokens": 159,
+    "total_tokens": 3760
+   }
+  },
+  {
+   "id": "c15",
+   "expected": [
+    "X03"
+   ],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [],
+   "ms": 1679,
+   "usage": {
+    "input_tokens": 3582,
+    "output_tokens": 182,
+    "total_tokens": 3764
+   }
+  },
+  {
+   "id": "c16",
+   "expected": [
+    "X04"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X04"
+   ],
+   "findings": [
+    {
+     "decisionId": "X04",
+     "relation": "conflicts",
+     "workQuote": "Add ENABLE_NEW_CHECKOUT env var to toggle the new checkout",
+     "explanation": "Feature flags must be managed in LaunchDarkly; environment variable flags read from config at startup were explicitly rejected.",
+     "decisionTitle": "Feature flags via LaunchDarkly",
+     "decision": "Feature flags are managed in LaunchDarkly; no flags hard-coded in config files.",
+     "decisionQuote": "Feature flags are managed in LaunchDarkly; no flags hard-coded in config files.",
+     "pageTitle": "ADR-009: Feature flags",
+     "date": "2026-04-01"
+    }
+   ],
+   "ms": 1441,
+   "usage": {
+    "input_tokens": 3586,
+    "output_tokens": 153,
+    "total_tokens": 3739
+   }
+  },
+  {
+   "id": "c17",
+   "expected": [
+    "X05"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X05"
+   ],
+   "findings": [
+    {
+     "decisionId": "X05",
+     "relation": "conflicts",
+     "workQuote": "save cutoff_at as local time without timezone",
+     "explanation": "Timestamps must be stored in UTC as timestamptz and converted to local time only in the UI, so store cutoff_at as timestamptz in UTC and convert to KST for display.",
+     "decisionTitle": "Timestamps stored in UTC",
+     "decision": "All timestamps are stored in UTC (timestamptz) and converted to local time only in the UI.",
+     "decisionQuote": "All timestamps are stored in UTC (timestamptz) and converted to local time only in the UI.",
+     "pageTitle": "ADR-010: Time handling",
+     "date": "2026-01-28"
+    }
+   ],
+   "ms": 1463,
+   "usage": {
+    "input_tokens": 3589,
+    "output_tokens": 155,
+    "total_tokens": 3744
+   }
+  },
+  {
+   "id": "c18",
+   "expected": [
+    "X06"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X06"
+   ],
+   "findings": [
+    {
+     "decisionId": "X06",
+     "relation": "revisits",
+     "workQuote": "Prototype the mobile app in Flutter",
+     "explanation": "The team chose React Native with Expo for the customer mobile app and explicitly rejected Flutter; building the MVP in Flutter adopts the rejected option.",
+     "decisionTitle": "Mobile app built with React Native",
+     "decision": "The customer mobile app is built with React Native and Expo.",
+     "decisionQuote": "The customer mobile app is built with React Native and Expo.",
+     "pageTitle": "ADR-011: Mobile framework",
+     "date": "2026-05-30"
+    }
+   ],
+   "ms": 1563,
+   "usage": {
+    "input_tokens": 3585,
+    "output_tokens": 147,
+    "total_tokens": 3732
+   }
+  },
+  {
+   "id": "c19",
+   "expected": [
+    "X07"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X07"
+   ],
+   "findings": [
+    {
+     "decisionId": "X07",
+     "relation": "conflicts",
+     "workQuote": "Add a middleware that logs request and response bodies (name, date of birth, address) at INFO level.",
+     "explanation": "Name, date of birth and address are PII, and the decision says PII must never be written to logs, so don't log these bodies or redact the PII fields first.",
+     "decisionTitle": "PII encrypted with AWS KMS",
+     "decision": "Personally identifiable information is encrypted at the field level with keys in AWS KMS; PII must never be written to logs.",
+     "decisionQuote": "Personally identifiable information is encrypted at the field level with keys in AWS KMS; PII must never be written to logs.",
+     "pageTitle": "ADR-012: Protecting personal data",
+     "date": "2026-06-05"
+    }
+   ],
+   "ms": 1626,
+   "usage": {
+    "input_tokens": 3593,
+    "output_tokens": 160,
+    "total_tokens": 3753
+   }
+  },
+  {
+   "id": "c20",
+   "expected": [
+    "X08"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X08"
+   ],
+   "findings": [
+    {
+     "decisionId": "X08",
+     "relation": "conflicts",
+     "workQuote": "We still have the Jenkins box; add a nightly job there.",
+     "explanation": "CI runs on GitHub Actions and Jenkins is being retired, so add the nightly integration test job as a scheduled GitHub Actions workflow.",
+     "decisionTitle": "CI on GitHub Actions",
+     "decision": "Continuous integration runs on GitHub Actions; Jenkins is being retired.",
+     "decisionQuote": "Continuous integration runs on GitHub Actions; Jenkins is being retired.",
+     "pageTitle": "ADR-013: Continuous integration",
+     "date": "2026-02-25"
+    }
+   ],
+   "ms": 1370,
+   "usage": {
+    "input_tokens": 3581,
+    "output_tokens": 152,
+    "total_tokens": 3733
+   }
+  },
+  {
+   "id": "c21",
+   "expected": [
+    "491523:2",
+    "X09"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "491523:2",
+    "X09"
+   ],
+   "findings": [
+    {
+     "decisionId": "X09",
+     "relation": "conflicts",
+     "workQuote": "Write the new reconciliation service in Go",
+     "explanation": "New backend services must be Python 3.13 with FastAPI; Go was explicitly rejected.",
+     "decisionTitle": "Backend language: Python with FastAPI",
+     "decision": "New backend services are written in Python 3.13 with FastAPI.",
+     "decisionQuote": "New backend services are written in Python 3.13 with FastAPI.",
+     "pageTitle": "ADR-014: Backend language",
+     "date": "2026-01-12"
+    },
+    {
+     "decisionId": "491523:2",
+     "relation": "conflicts",
+     "workQuote": "Also run it as its own service.",
+     "explanation": "No new microservices until the ledger monolith has full transfer test coverage; put this in the existing ledger service.",
+     "decisionTitle": "No new microservices until ledger has full transfer test coverage",
+     "decision": "No new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+     "decisionQuote": "Decision: no new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+     "pageTitle": "2026-10-14 Platform sync — meeting notes",
+     "date": "2026-10-14"
+    }
+   ],
+   "ms": 1828,
+   "usage": {
+    "input_tokens": 3584,
+    "output_tokens": 205,
+    "total_tokens": 3789
+   }
+  },
+  {
+   "id": "c22",
+   "expected": [
+    "X10"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X10"
+   ],
+   "findings": [
+    {
+     "decisionId": "X10",
+     "relation": "conflicts",
+     "workQuote": "Cache account balances in Redis for 60 seconds",
+     "explanation": "Redis with TTLs is the approved cache, but the decision says balances are never cached because stale balances risked double-spend, so don't cache the balance endpoint.",
+     "decisionTitle": "Caching with Redis (ElastiCache)",
+     "decision": "Shared caching uses Redis on ElastiCache with explicit TTLs; balances are never cached.",
+     "decisionQuote": "Shared caching uses Redis on ElastiCache with explicit TTLs; balances are never cached.",
+     "pageTitle": "ADR-015: Caching",
+     "date": "2026-07-08"
+    }
+   ],
+   "ms": 1595,
+   "usage": {
+    "input_tokens": 3599,
+    "output_tokens": 151,
+    "total_tokens": 3750
+   }
+  },
+  {
+   "id": "c23",
+   "expected": [
+    "X12"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X12"
+   ],
+   "findings": [
+    {
+     "decisionId": "X12",
+     "relation": "revisits",
+     "workQuote": "Switch transactional email back to SendGrid",
+     "explanation": "SendGrid was explicitly superseded by Amazon SES for transactional email; adopting it again reverses that decision.",
+     "decisionTitle": "Email via Amazon SES (SendGrid superseded)",
+     "decision": "Transactional email is sent with Amazon SES. The earlier SendGrid decision is superseded.",
+     "decisionQuote": "Transactional email is sent with Amazon SES. The earlier SendGrid decision is superseded.",
+     "pageTitle": "ADR-016: Email provider",
+     "date": "2026-08-19"
+    }
+   ],
+   "ms": 1469,
+   "usage": {
+    "input_tokens": 3587,
+    "output_tokens": 134,
+    "total_tokens": 3721
+   }
+  },
+  {
+   "id": "c24",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "65699:1",
+     "relation": "follows",
+     "workQuote": "Store partner-provided metadata in a JSONB column on the transactions table",
+     "explanation": "Flexible metadata in a JSONB column on PostgreSQL is the explicitly allowed exception, so no new database is needed.",
+     "decisionTitle": "System of record: PostgreSQL",
+     "decision": "PostgreSQL is the single system of record for all ledger and account data.",
+     "decisionQuote": "We use PostgreSQL as the single system of record for all ledger and account data. We will not introduce MongoDB or any other document database for ledger, transaction or account data.",
+     "pageTitle": "ADR-001: PostgreSQL as the system of record",
+     "date": "2026-02-11"
+    }
+   ],
+   "ms": 1511,
+   "usage": {
+    "input_tokens": 3590,
+    "output_tokens": 148,
+    "total_tokens": 3738
+   }
+  },
+  {
+   "id": "c25",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "458753:1",
+     "relation": "follows",
+     "workQuote": "Upload triggers an SQS message; a worker parses the file.",
+     "explanation": "Uses Amazon SQS for asynchronous work, as decided.",
+     "decisionTitle": "Asynchronous jobs: Amazon SQS, not Kafka",
+     "decision": "We use Amazon SQS queues for asynchronous work.",
+     "decisionQuote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
+     "pageTitle": "ADR-002: Use SQS for asynchronous jobs, not Kafka",
+     "date": "2026-03-04"
+    }
+   ],
+   "ms": 1393,
+   "usage": {
+    "input_tokens": 3580,
+    "output_tokens": 125,
+    "total_tokens": 3705
+   }
+  },
+  {
+   "id": "c26",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "491523:1",
+     "relation": "follows",
+     "workQuote": "Add Idempotency-Key support to POST /v1/transfers",
+     "explanation": "Transfers move money, and requiring the Idempotency-Key header (rejecting requests without it) and replaying the stored response matches the decision.",
+     "decisionTitle": "Idempotency-Key required on money-moving endpoints",
+     "decision": "Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+     "decisionQuote": "Decision: every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+     "pageTitle": "2026-10-14 Platform sync — meeting notes",
+     "date": "2026-10-14"
+    }
+   ],
+   "ms": 1405,
+   "usage": {
+    "input_tokens": 3584,
+    "output_tokens": 149,
+    "total_tokens": 3733
+   }
+  },
+  {
+   "id": "c27",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "X03",
+     "relation": "follows",
+     "workQuote": "Add OpenTelemetry spans to the payout worker",
+     "explanation": "Emitting traces via OpenTelemetry matches the observability decision.",
+     "decisionTitle": "Observability with OpenTelemetry and Grafana",
+     "decision": "Services emit traces and metrics with OpenTelemetry; dashboards and alerts live in Grafana Cloud.",
+     "decisionQuote": "Services emit traces and metrics with OpenTelemetry; dashboards and alerts live in Grafana Cloud.",
+     "pageTitle": "ADR-008: Observability stack",
+     "date": "2026-03-15"
+    }
+   ],
+   "ms": 1307,
+   "usage": {
+    "input_tokens": 3562,
+    "output_tokens": 122,
+    "total_tokens": 3684
+   }
+  },
+  {
+   "id": "c28",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "X09",
+     "relation": "follows",
+     "workQuote": "Upgrade FastAPI to the latest minor version",
+     "explanation": "Upgrading FastAPI stays within the decided Python/FastAPI backend stack.",
+     "decisionTitle": "Backend language: Python with FastAPI",
+     "decision": "New backend services are written in Python 3.13 with FastAPI.",
+     "decisionQuote": "New backend services are written in Python 3.13 with FastAPI.",
+     "pageTitle": "ADR-014: Backend language",
+     "date": "2026-01-12"
+    }
+   ],
+   "ms": 1323,
+   "usage": {
+    "input_tokens": 3561,
+    "output_tokens": 127,
+    "total_tokens": 3688
+   }
+  },
+  {
+   "id": "c29",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [],
+   "ms": 1642,
+   "usage": {
+    "input_tokens": 3571,
+    "output_tokens": 50,
+    "total_tokens": 3621
+   }
+  },
+  {
+   "id": "c30",
+   "expected": [
+    "65699:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "65699:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "65699:1",
+     "relation": "conflicts",
+     "workQuote": "Use DynamoDB for the new loyalty points ledger",
+     "explanation": "DynamoDB was explicitly rejected for ledger data; PostgreSQL is the single system of record (use a JSONB column for flexible metadata if needed).",
+     "decisionTitle": "System of record: PostgreSQL",
+     "decision": "PostgreSQL is the single system of record for all ledger and account data.",
+     "decisionQuote": "We use PostgreSQL as the single system of record for all ledger and account data. We will not introduce MongoDB or any other document database for ledger, transaction or account data.",
+     "pageTitle": "ADR-001: PostgreSQL as the system of record",
+     "date": "2026-02-11"
+    }
+   ],
+   "ms": 1493,
+   "usage": {
+    "input_tokens": 3585,
+    "output_tokens": 157,
+    "total_tokens": 3742
+   }
+  },
+  {
+   "id": "c31",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "164005:1",
+     "relation": "follows",
+     "workQuote": "Publish partner webhooks schema in the OpenAPI spec",
+     "explanation": "Partner-facing webhook payloads are documented in the OpenAPI spec under /v1, as the decision requires.",
+     "decisionTitle": "Public partner API style: REST with OpenAPI 3.1",
+     "decision": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/).",
+     "decisionQuote": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/). We decided not to offer GraphQL to partners, because per-field authorization and query cost limits are hard to audit for a regulated payments API.",
+     "pageTitle": "ADR-003: Public partner API is REST with OpenAPI",
+     "date": "2026-04-22"
+    }
+   ],
+   "ms": 1477,
+   "usage": {
+    "input_tokens": 3588,
+    "output_tokens": 141,
+    "total_tokens": 3729
+   }
+  },
+  {
+   "id": "c32",
+   "expected": [
+    "164005:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "164005:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "164005:1",
+     "relation": "conflicts",
+     "workQuote": "expose a public gRPC API for partner reports",
+     "explanation": "The public partner API must be REST described in the OpenAPI 3.1 spec under /v1/. A public gRPC API for partners isn't in that spec and breaks this decision.",
+     "decisionTitle": "Public partner API style: REST with OpenAPI 3.1",
+     "decision": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/).",
+     "decisionQuote": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/). We decided not to offer GraphQL to partners, because per-field authorization and query cost limits are hard to audit for a regulated payments API.",
+     "pageTitle": "ADR-003: Public partner API is REST with OpenAPI",
+     "date": "2026-04-22"
+    }
+   ],
+   "ms": 2244,
+   "usage": {
+    "input_tokens": 3588,
+    "output_tokens": 155,
+    "total_tokens": 3743
+   }
+  },
+  {
+   "id": "c33",
+   "expected": [
+    "65699:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "65699:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "65699:1",
+     "relation": "conflicts",
+     "workQuote": "거래 이력을 MongoDB 컬렉션에 저장해 스키마 변경 없이 관리하려고 합니다.",
+     "explanation": "거래 이력(원장 데이터)을 MongoDB에 저장하는 것은 명시적으로 거부된 방안입니다. 유동적인 메타데이터는 PostgreSQL의 JSONB 컬럼에 저장하세요.",
+     "decisionTitle": "System of record: PostgreSQL",
+     "decision": "PostgreSQL is the single system of record for all ledger and account data.",
+     "decisionQuote": "We use PostgreSQL as the single system of record for all ledger and account data. We will not introduce MongoDB or any other document database for ledger, transaction or account data.",
+     "pageTitle": "ADR-001: PostgreSQL as the system of record",
+     "date": "2026-02-11"
+    }
+   ],
+   "ms": 2105,
+   "usage": {
+    "input_tokens": 3637,
+    "output_tokens": 214,
+    "total_tokens": 3851
+   }
+  },
+  {
+   "id": "c34",
+   "expected": [
+    "458753:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "458753:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "458753:1",
+     "relation": "revisits",
+     "workQuote": "Kafka 클러스터를 새로 띄우고 payment.created 이벤트를 발행합니다",
+     "explanation": "The team chose SQS for asynchronous work and rejected Kafka. This work adds a Kafka cluster, and it doesn't show that the revisit conditions (ordered replay across services or more than 5,000 msg/s) are met.",
+     "decisionTitle": "Asynchronous jobs: Amazon SQS, not Kafka",
+     "decision": "We use Amazon SQS queues for asynchronous work.",
+     "decisionQuote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
+     "pageTitle": "ADR-002: Use SQS for asynchronous jobs, not Kafka",
+     "date": "2026-03-04"
+    }
+   ],
+   "ms": 1710,
+   "usage": {
+    "input_tokens": 3623,
+    "output_tokens": 194,
+    "total_tokens": 3817
+   }
+  },
+  {
+   "id": "c35",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [],
+   "ms": 976,
+   "usage": {
+    "input_tokens": 3584,
+    "output_tokens": 50,
+    "total_tokens": 3634
+   }
+  },
+  {
+   "id": "c36",
+   "expected": [
+    "458770:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "458770:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "458770:1",
+     "relation": "conflicts",
+     "workQuote": "비밀번호 해시를 우리 DB에 저장하고 로그인·비밀번호 재설정을 직접 만듭시다.",
+     "explanation": "사용자 로그인은 Auth0(OIDC)로만 처리해야 하며, 자체 DB 비밀번호 저장과 자체 로그인·비밀번호 재설정 구현은 명시적으로 거부된 방식입니다.",
+     "decisionTitle": "Authentication through Auth0 (OIDC)",
+     "decision": "All user sign-in goes through Auth0 using OIDC.",
+     "decisionQuote": "All user sign-in goes through Auth0 using OIDC. We will not store passwords or build our own login, password reset or MFA flows.",
+     "pageTitle": "ADR-004: Authentication through Auth0 (OIDC)",
+     "date": "2026-05-09"
+    }
+   ],
+   "ms": 1889,
+   "usage": {
+    "input_tokens": 3617,
+    "output_tokens": 215,
+    "total_tokens": 3832
+   }
+  },
+  {
+   "id": "c37",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "458753:1",
+     "relation": "follows",
+     "workQuote": "should we revisit Kafka once we pass 5,000 messages per second?",
+     "explanation": "The spike only analyzes Kafka against the decision's own revisit trigger (5,000 msg/s) and adopts nothing.",
+     "decisionTitle": "Asynchronous jobs: Amazon SQS, not Kafka",
+     "decision": "We use Amazon SQS queues for asynchronous work.",
+     "decisionQuote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
+     "pageTitle": "ADR-002: Use SQS for asynchronous jobs, not Kafka",
+     "date": "2026-03-04"
+    }
+   ],
+   "ms": 1804,
+   "usage": {
+    "input_tokens": 3588,
+    "output_tokens": 148,
+    "total_tokens": 3736
+   }
+  },
+  {
+   "id": "c38",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "X10",
+     "relation": "follows",
+     "workQuote": "Add a Redis cache for the exchange-rate lookup\n\nCache FX rates from the provider for 5 minutes.",
+     "explanation": "Uses Redis with an explicit 5-minute TTL and caches FX rates, not balances, so it matches the caching decision.",
+     "decisionTitle": "Caching with Redis (ElastiCache)",
+     "decision": "Shared caching uses Redis on ElastiCache with explicit TTLs; balances are never cached.",
+     "decisionQuote": "Shared caching uses Redis on ElastiCache with explicit TTLs; balances are never cached.",
+     "pageTitle": "ADR-015: Caching",
+     "date": "2026-07-08"
+    }
+   ],
+   "ms": 1459,
+   "usage": {
+    "input_tokens": 3583,
+    "output_tokens": 163,
+    "total_tokens": 3746
+   }
+  },
+  {
+   "id": "c39",
+   "expected": [
+    "491523:1"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "491523:1"
+   ],
+   "findings": [
+    {
+     "decisionId": "491523:1",
+     "relation": "conflicts",
+     "workQuote": "Retries can just send the request again.",
+     "explanation": "A money-moving refund endpoint must require an Idempotency-Key header, and retries must reuse the same key, not just resend the request.",
+     "decisionTitle": "Idempotency-Key required on money-moving endpoints",
+     "decision": "Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+     "decisionQuote": "Decision: every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+     "pageTitle": "2026-10-14 Platform sync — meeting notes",
+     "date": "2026-10-14"
+    }
+   ],
+   "ms": 1443,
+   "usage": {
+    "input_tokens": 3583,
+    "output_tokens": 137,
+    "total_tokens": 3720
+   }
+  },
+  {
+   "id": "c40",
+   "expected": [
+    "X10"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X10"
+   ],
+   "findings": [
+    {
+     "decisionId": "X10",
+     "relation": "revisits",
+     "workQuote": "Use Memcached for session caching",
+     "explanation": "Memcached was explicitly rejected in favor of Redis on ElastiCache for shared caching; use Redis with explicit TTLs.",
+     "decisionTitle": "Caching with Redis (ElastiCache)",
+     "decision": "Shared caching uses Redis on ElastiCache with explicit TTLs; balances are never cached.",
+     "decisionQuote": "Shared caching uses Redis on ElastiCache with explicit TTLs; balances are never cached.",
+     "pageTitle": "ADR-015: Caching",
+     "date": "2026-07-08"
+    }
+   ],
+   "ms": 1664,
+   "usage": {
+    "input_tokens": 3572,
+    "output_tokens": 137,
+    "total_tokens": 3709
+   }
+  },
+  {
+   "id": "c41",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "X02",
+     "relation": "follows",
+     "workQuote": "Add Terraform module for the SQS dead-letter queue",
+     "explanation": "Infrastructure is defined in Terraform, as the decision requires.",
+     "decisionTitle": "Infrastructure as code with Terraform",
+     "decision": "All cloud infrastructure is defined in Terraform and changed only through pull requests.",
+     "decisionQuote": "All cloud infrastructure is defined in Terraform and changed only through pull requests.",
+     "pageTitle": "ADR-007: Infrastructure as code",
+     "date": "2026-02-02"
+    },
+    {
+     "decisionId": "458753:1",
+     "relation": "follows",
+     "workQuote": "Add Terraform module for the SQS dead-letter queue",
+     "explanation": "Uses SQS for asynchronous work, as the decision requires.",
+     "decisionTitle": "Asynchronous jobs: Amazon SQS, not Kafka",
+     "decision": "We use Amazon SQS queues for asynchronous work.",
+     "decisionQuote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
+     "pageTitle": "ADR-002: Use SQS for asynchronous jobs, not Kafka",
+     "date": "2026-03-04"
+    }
+   ],
+   "ms": 1908,
+   "usage": {
+    "input_tokens": 3563,
+    "output_tokens": 195,
+    "total_tokens": 3758
+   }
+  },
+  {
+   "id": "c42",
+   "expected": [
+    "X01"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X01"
+   ],
+   "findings": [
+    {
+     "decisionId": "X01",
+     "relation": "revisits",
+     "workQuote": "Partners prefer \"12.50\" over 1250; change the API to return decimal strings.",
+     "explanation": "Decimal strings in APIs were explicitly rejected; amounts must be integer minor units with an ISO 4217 currency code.",
+     "decisionTitle": "Money stored as integer minor units",
+     "decision": "All monetary amounts are stored and transmitted as integers in minor units (cents) together with an ISO 4217 currency code.",
+     "decisionQuote": "All monetary amounts are stored and transmitted as integers in minor units (cents) with an ISO 4217 currency code.",
+     "pageTitle": "ADR-006: Representing money",
+     "date": "2026-01-20"
+    }
+   ],
+   "ms": 1485,
+   "usage": {
+    "input_tokens": 3587,
+    "output_tokens": 153,
+    "total_tokens": 3740
+   }
+  },
+  {
+   "id": "c43",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "491523:2",
+     "relation": "follows",
+     "workQuote": "Implement scheduled transfers inside the existing ledger service",
+     "explanation": "The new feature goes into the existing ledger service rather than a new microservice, as the decision requires.",
+     "decisionTitle": "No new microservices until ledger has full transfer test coverage",
+     "decision": "No new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+     "decisionQuote": "Decision: no new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+     "pageTitle": "2026-10-14 Platform sync — meeting notes",
+     "date": "2026-10-14"
+    },
+    {
+     "decisionId": "458753:1",
+     "relation": "follows",
+     "workQuote": "with an SQS delayed message to trigger execution",
+     "explanation": "Uses Amazon SQS for asynchronous work, as decided.",
+     "decisionTitle": "Asynchronous jobs: Amazon SQS, not Kafka",
+     "decision": "We use Amazon SQS queues for asynchronous work.",
+     "decisionQuote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
+     "pageTitle": "ADR-002: Use SQS for asynchronous jobs, not Kafka",
+     "date": "2026-03-04"
+    }
+   ],
+   "ms": 1712,
+   "usage": {
+    "input_tokens": 3592,
+    "output_tokens": 202,
+    "total_tokens": 3794
+   }
+  },
+  {
+   "id": "c44",
+   "expected": [],
+   "acceptable": [],
+   "predicted": [],
+   "findings": [
+    {
+     "decisionId": "360450:1",
+     "relation": "follows",
+     "workQuote": "Rewrite the web app's data layer from Redux to TanStack Query",
+     "explanation": "Migrating server state from Redux to TanStack Query matches the decision, and migrating slices when touched is allowed.",
+     "decisionTitle": "Frontend server state: TanStack Query",
+     "decision": "New frontend code uses TanStack Query for server state.",
+     "decisionQuote": "New frontend code uses TanStack Query for server state. Redux is superseded and must not be added to new screens; existing Redux slices are migrated when touched.",
+     "pageTitle": "ADR-005: Frontend server state with TanStack Query",
+     "date": "2026-06-17"
+    }
+   ],
+   "ms": 1544,
+   "usage": {
+    "input_tokens": 3589,
+    "output_tokens": 143,
+    "total_tokens": 3732
+   }
+  },
+  {
+   "id": "c45",
+   "expected": [
+    "X11"
+   ],
+   "acceptable": [],
+   "predicted": [
+    "X11"
+   ],
+   "findings": [
+    {
+     "decisionId": "X11",
+     "relation": "conflicts",
+     "workQuote": "Merge the ledger rounding fix with one approval from the Payments team since Platform is on holiday.",
+     "explanation": "Ledger PRs require two approvals, including one from Platform; merging with a single Payments approval breaks this rule.",
+     "decisionTitle": "Two approvals for ledger code changes",
+     "decision": "Pull requests that touch the ledger package need two approvals, one from the Platform team.",
+     "decisionQuote": "Pull requests that touch the ledger package need two approvals, one from the Platform team.",
+     "pageTitle": "Engineering handbook: code review",
+     "date": "2026-03-30"
+    }
+   ],
+   "ms": 1416,
+   "usage": {
+    "input_tokens": 3590,
+    "output_tokens": 152,
+    "total_tokens": 3742
+   }
+  }
+ ]
+}

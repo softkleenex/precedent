@@ -1,0 +1,190 @@
+[
+ {
+  "id": "491523:1",
+  "title": "Idempotency-Key required on money-moving endpoints",
+  "decision": "Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+  "alternativesRejected": [],
+  "rationale": "Settlement job failures last week were caused by retries without idempotency keys.",
+  "exceptions": "",
+  "revisitWhen": "",
+  "status": "accepted",
+  "date": "2026-10-14",
+  "quote": "Decision: every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+  "keywords": [
+   "idempotency",
+   "idempotency-key",
+   "retries",
+   "payments",
+   "settlement",
+   "transfers",
+   "api"
+  ],
+  "pageTitle": "2026-10-14 Platform sync \u2014 meeting notes"
+ },
+ {
+  "id": "491523:2",
+  "title": "No new microservices until ledger has full transfer test coverage",
+  "decision": "No new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+  "alternativesRejected": [
+   "Splitting the ledger service into new microservices (debated, not adopted for now)"
+  ],
+  "rationale": "The page does not state a rationale for this decision.",
+  "exceptions": "",
+  "revisitWhen": "The ledger monolith has full test coverage on transfers.",
+  "status": "accepted",
+  "date": "2026-10-14",
+  "quote": "Decision: no new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+  "keywords": [
+   "ledger",
+   "microservices",
+   "monolith",
+   "transfers",
+   "test coverage",
+   "architecture"
+  ],
+  "pageTitle": "2026-10-14 Platform sync \u2014 meeting notes"
+ },
+ {
+  "id": "360450:1",
+  "title": "Frontend server state: TanStack Query",
+  "decision": "New frontend code uses TanStack Query for server state.",
+  "alternativesRejected": [
+   "Redux for server state (superseded; must not be added to new screens)"
+  ],
+  "rationale": "The page does not state a rationale.",
+  "exceptions": "Existing Redux slices are not removed wholesale; they are migrated when touched.",
+  "revisitWhen": "",
+  "status": "accepted",
+  "date": "2026-06-17",
+  "quote": "New frontend code uses TanStack Query for server state. Redux is superseded and must not be added to new screens; existing Redux slices are migrated when touched.",
+  "keywords": [
+   "tanstack query",
+   "react query",
+   "redux",
+   "server state",
+   "frontend",
+   "data fetching"
+  ],
+  "pageTitle": "ADR-005: Frontend server state with TanStack Query"
+ },
+ {
+  "id": "458770:1",
+  "title": "Authentication through Auth0 (OIDC)",
+  "decision": "All user sign-in goes through Auth0 using OIDC.",
+  "alternativesRejected": [
+   "Storing passwords in our own database",
+   "Building our own login, password reset, or MFA flows"
+  ],
+  "rationale": "SOC 2 scope is smaller when credentials never touch our database, and Auth0 already provides MFA.",
+  "exceptions": "",
+  "revisitWhen": "",
+  "status": "accepted",
+  "date": "2026-05-09",
+  "quote": "All user sign-in goes through Auth0 using OIDC. We will not store passwords or build our own login, password reset or MFA flows.",
+  "keywords": [
+   "auth0",
+   "oidc",
+   "authentication",
+   "sign-in",
+   "mfa",
+   "password",
+   "soc 2",
+   "login"
+  ],
+  "pageTitle": "ADR-004: Authentication through Auth0 (OIDC)"
+ },
+ {
+  "id": "164005:1",
+  "title": "Public partner API style: REST with OpenAPI 3.1",
+  "decision": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/).",
+  "alternativesRejected": [
+   "GraphQL for partners"
+  ],
+  "rationale": "Per-field authorization and query cost limits are hard to audit for a regulated payments API.",
+  "exceptions": "Internal tools may use whatever fits, but anything partners call must be in the OpenAPI spec.",
+  "revisitWhen": "",
+  "status": "accepted",
+  "date": "2026-04-22",
+  "quote": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/). We decided not to offer GraphQL to partners, because per-field authorization and query cost limits are hard to audit for a regulated payments API.",
+  "keywords": [
+   "rest",
+   "openapi",
+   "api design",
+   "partner api",
+   "graphql",
+   "api versioning",
+   "v1"
+  ],
+  "pageTitle": "ADR-003: Public partner API is REST with OpenAPI"
+ },
+ {
+  "id": "458753:1",
+  "title": "Asynchronous jobs: Amazon SQS, not Kafka",
+  "decision": "We use Amazon SQS queues for asynchronous work.",
+  "alternativesRejected": [
+   "Kafka"
+  ],
+  "rationale": "Running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and event replay is not needed today.",
+  "exceptions": "",
+  "revisitWhen": "Revisit if we need ordered event replay across services or exceed 5,000 messages per second.",
+  "status": "accepted",
+  "date": "2026-03-04",
+  "quote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
+  "keywords": [
+   "sqs",
+   "kafka",
+   "async jobs",
+   "message queue",
+   "webhooks",
+   "background processing",
+   "event replay"
+  ],
+  "pageTitle": "ADR-002: Use SQS for asynchronous jobs, not Kafka"
+ },
+ {
+  "id": "65699:1",
+  "title": "System of record: PostgreSQL",
+  "decision": "PostgreSQL is the single system of record for all ledger and account data.",
+  "alternativesRejected": [
+   "MongoDB (document database) for ledger, transaction or account data",
+   "DynamoDB",
+   "Any other document database for ledger, transaction or account data"
+  ],
+  "rationale": "Every transfer must commit multiple entries together, and finance needs ad-hoc reporting with joins across accounts, entries and settlements. MongoDB was rejected for slower multi-document transactions, no team operational experience, and loss of strict constraints on money data; DynamoDB was rejected because reporting would need a separate analytics copy.",
+  "exceptions": "Flexible metadata may be stored in a JSONB column instead of a new database.",
+  "revisitWhen": "",
+  "status": "accepted",
+  "date": "2026-02-11",
+  "quote": "We use PostgreSQL as the single system of record for all ledger and account data. We will not introduce MongoDB or any other document database for ledger, transaction or account data.",
+  "keywords": [
+   "postgresql",
+   "database",
+   "system of record",
+   "mongodb",
+   "dynamodb",
+   "ledger",
+   "jsonb",
+   "alembic"
+  ],
+  "pageTitle": "ADR-001: PostgreSQL as the system of record"
+ },
+ {
+  "id": "65699:2",
+  "title": "Schema changes via Alembic migrations",
+  "decision": "Schema changes to the PostgreSQL database go through Alembic migrations.",
+  "alternativesRejected": [],
+  "rationale": "Consequence of adopting PostgreSQL as the system of record; the page states schema changes go through Alembic migrations.",
+  "exceptions": "",
+  "revisitWhen": "",
+  "status": "accepted",
+  "date": "2026-02-11",
+  "quote": "Schema changes go through Alembic migrations.",
+  "keywords": [
+   "alembic",
+   "migrations",
+   "schema",
+   "postgresql"
+  ],
+  "pageTitle": "ADR-001: PostgreSQL as the system of record"
+ }
+]

@@ -13,6 +13,8 @@ Rules:
 - "alternativesRejected" lists options the page explicitly says were rejected or ruled out. Empty if none are stated.
 - "status": "accepted" for active decisions, "superseded" if the page says it was replaced, "proposed" if not yet agreed.
 - "date": the decision date as YYYY-MM-DD if the page states one, otherwise empty string.
+- "exceptions": conditions under which the decision does NOT apply, or things it explicitly still allows (e.g. "internal tools may use any API style", "flexible metadata may go in a JSONB column"). Empty string if none.
+- "revisitWhen": the condition the page gives for reopening the decision, or empty string.
 - "keywords": 3-8 lowercase terms a developer might use when touching this area (technologies, components).
 - If the page contains no decisions, return an empty list.`;
 
@@ -31,9 +33,11 @@ const SCHEMA = {
           status: { type: 'string', enum: ['accepted', 'superseded', 'proposed'] },
           date: { type: 'string' },
           quote: { type: 'string', description: 'Verbatim sentence(s) from the page' },
+          exceptions: { type: 'string', description: 'What the decision still allows / where it does not apply' },
+          revisitWhen: { type: 'string', description: 'Stated condition for revisiting, if any' },
           keywords: { type: 'array', items: { type: 'string' } },
         },
-        required: ['title', 'decision', 'alternativesRejected', 'rationale', 'status', 'date', 'quote', 'keywords'],
+        required: ['title', 'decision', 'alternativesRejected', 'rationale', 'status', 'date', 'quote', 'exceptions', 'revisitWhen', 'keywords'],
       },
     },
   },
@@ -44,13 +48,14 @@ const SCHEMA = {
  * Extract decisions from page text. Decisions whose quote cannot be found in the
  * page are dropped: this keeps the registry free of hallucinated decisions.
  */
-export async function extractDecisions(page) {
+export async function extractDecisions(page, { model } = {}) {
   const { decisions = [] } = await structuredCall({
     name: 'record_decisions',
     system: SYSTEM,
     user: `Page title: ${page.title}\n\nPage content:\n"""\n${clip(page.text, 14000)}\n"""`,
     schema: SCHEMA,
     maxTokens: 3000,
+    model,
   });
 
   const verified = [];

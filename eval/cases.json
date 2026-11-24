@@ -1,0 +1,449 @@
+[
+ {
+  "id": "c01",
+  "text": "Store transaction history in MongoDB for flexible metadata\n\nPartners keep sending new metadata fields. Let us move transaction history into a MongoDB collection so we can store arbitrary fields without migrations.",
+  "problems": [
+   "65699:1"
+  ],
+  "acceptable": [
+   "65699:2"
+  ]
+ },
+ {
+  "id": "c02",
+  "text": "Stream payment events through Kafka\n\nWe want other teams to subscribe to payment events. Proposal: set up a Kafka cluster and publish payment.created and payment.settled events to it.",
+  "problems": [
+   "458753:1"
+  ]
+ },
+ {
+  "id": "c03",
+  "text": "Add index on ledger_entries.created_at\n\nMonthly statement queries are slow. Add a btree index on ledger_entries.created_at via an Alembic migration.",
+  "problems": []
+ },
+ {
+  "id": "c04",
+  "text": "Fix typo in onboarding email\n\nThe welcome email says recieve instead of receive.",
+  "problems": []
+ },
+ {
+  "id": "c05",
+  "text": "Expose a GraphQL endpoint for partners\n\nPartner X asked for GraphQL so they can fetch accounts and transactions in one round trip. Add /graphql to the public partner API.",
+  "problems": [
+   "164005:1"
+  ],
+  "acceptable": [
+   "164005:2"
+  ]
+ },
+ {
+  "id": "c06",
+  "text": "Internal admin dashboard: use GraphQL between the React admin UI and the backend-for-frontend\n\nOnly our support staff use this internal tool; it is not exposed to partners.",
+  "problems": []
+ },
+ {
+  "id": "c07",
+  "text": "Build our own login page with password reset\n\nAuth0 costs are growing. Let's store bcrypt password hashes in Postgres and build login, password reset and MFA ourselves.",
+  "problems": [
+   "458770:1"
+  ]
+ },
+ {
+  "id": "c08",
+  "text": "Add Google as a social login option in Auth0\n\nEnable the Google connection in our Auth0 tenant and show the button on the sign-in page.",
+  "problems": []
+ },
+ {
+  "id": "c09",
+  "text": "Settings screen: manage server state with a new Redux slice\n\nCreate settingsSlice with thunks to fetch and update user settings from the API.",
+  "problems": [
+   "360450:1"
+  ]
+ },
+ {
+  "id": "c10",
+  "text": "Use TanStack Query for the new statements page\n\nFetch statements with useQuery and invalidate on download.",
+  "problems": []
+ },
+ {
+  "id": "c11",
+  "text": "Retry failed payouts automatically\n\nWhen a payout POST times out, retry it up to 3 times with a fresh request id each time.",
+  "problems": [
+   "491523:1"
+  ]
+ },
+ {
+  "id": "c12",
+  "text": "Create a separate notifications microservice\n\nSplit notification sending out of the ledger into its own service with its own deploy pipeline.",
+  "problems": [
+   "491523:2"
+  ]
+ },
+ {
+  "id": "c13",
+  "text": "Store FX rates as floats\n\nAdd fx_rate and converted_amount float columns so we can show converted amounts quickly.",
+  "problems": [
+   "X01"
+  ]
+ },
+ {
+  "id": "c14",
+  "text": "Hotfix: increase RDS instance size from the AWS console\n\nDB CPU is at 95%. Bump the instance class directly in the console tonight; we can sort out the code later.",
+  "problems": [
+   "X02"
+  ]
+ },
+ {
+  "id": "c15",
+  "text": "Evaluate Datadog APM for tracing\n\nTry the Datadog agent on staging and compare traces to what we have.",
+  "problems": [],
+  "acceptable": [
+   "X03"
+  ]
+ },
+ {
+  "id": "c16",
+  "text": "Add ENABLE_NEW_CHECKOUT env var to toggle the new checkout\n\nRead the flag from config at startup.",
+  "problems": [
+   "X04"
+  ]
+ },
+ {
+  "id": "c17",
+  "text": "Store settlement cut-off times in Seoul local time\n\nKorean bank partners use KST, so save cutoff_at as local time without timezone.",
+  "problems": [
+   "X05"
+  ]
+ },
+ {
+  "id": "c18",
+  "text": "Prototype the mobile app in Flutter\n\nOne of us knows Dart well; let's try Flutter for the customer app MVP.",
+  "problems": [
+   "X06"
+  ]
+ },
+ {
+  "id": "c19",
+  "text": "Log full request bodies for debugging the KYC flow\n\nAdd a middleware that logs request and response bodies (name, date of birth, address) at INFO level.",
+  "problems": [
+   "X07"
+  ]
+ },
+ {
+  "id": "c20",
+  "text": "Add a Jenkins job for nightly integration tests\n\nWe still have the Jenkins box; add a nightly job there.",
+  "problems": [
+   "X08"
+  ]
+ },
+ {
+  "id": "c21",
+  "text": "Write the new reconciliation service in Go\n\nGo will be faster for the reconciliation batch job. Also run it as its own service.",
+  "problems": [
+   "X09",
+   "491523:2"
+  ]
+ },
+ {
+  "id": "c22",
+  "text": "Cache account balances in Redis for 60 seconds\n\nThe balance endpoint is hot; cache GET /accounts/{id}/balance responses with a 60s TTL.",
+  "problems": [
+   "X10"
+  ]
+ },
+ {
+  "id": "c23",
+  "text": "Switch transactional email back to SendGrid\n\nSendGrid has better templates; move password-reset and receipt emails to SendGrid.",
+  "problems": [
+   "X12"
+  ]
+ },
+ {
+  "id": "c24",
+  "text": "Add JSONB metadata column to transactions\n\nStore partner-provided metadata in a JSONB column on the transactions table, with a GIN index.",
+  "problems": []
+ },
+ {
+  "id": "c25",
+  "text": "Move settlement file processing to an SQS worker\n\nUpload triggers an SQS message; a worker parses the file.",
+  "problems": []
+ },
+ {
+  "id": "c26",
+  "text": "Add Idempotency-Key support to POST /v1/transfers\n\nReject requests without the header and return the stored response on replay.",
+  "problems": []
+ },
+ {
+  "id": "c27",
+  "text": "Add OpenTelemetry spans to the payout worker",
+  "problems": []
+ },
+ {
+  "id": "c28",
+  "text": "Upgrade FastAPI to the latest minor version",
+  "problems": []
+ },
+ {
+  "id": "c29",
+  "text": "Dark mode for the dashboard\n\nAdd a theme toggle using CSS variables.",
+  "problems": []
+ },
+ {
+  "id": "c30",
+  "text": "Use DynamoDB for the new loyalty points ledger\n\nPoints are high volume; a key-value store fits better than Postgres.",
+  "problems": [
+   "65699:1"
+  ],
+  "acceptable": [
+   "65699:2"
+  ]
+ },
+ {
+  "id": "c31",
+  "text": "Publish partner webhooks schema in the OpenAPI spec\n\nDocument webhook payloads under /v1 in openapi.yaml.",
+  "problems": []
+ },
+ {
+  "id": "c32",
+  "text": "Partner reporting API: offer gRPC instead of REST\n\nBig partners want streaming; expose a public gRPC API for partner reports.",
+  "problems": [
+   "164005:1"
+  ]
+ },
+ {
+  "id": "c33",
+  "text": "송금 이력을 MongoDB로 옮기기\n\n파트너사가 보내는 메타데이터 필드가 계속 늘어나서, 거래 이력을 MongoDB 컬렉션에 저장해 스키마 변경 없이 관리하려고 합니다.",
+  "problems": [
+   "65699:1"
+  ],
+  "acceptable": [
+   "65699:2"
+  ]
+ },
+ {
+  "id": "c34",
+  "text": "결제 이벤트를 Kafka로 발행\n\n다른 팀이 결제 이벤트를 구독할 수 있게 Kafka 클러스터를 새로 띄우고 payment.created 이벤트를 발행합니다.",
+  "problems": [
+   "458753:1"
+  ]
+ },
+ {
+  "id": "c35",
+  "text": "정산 화면 다크 모드 추가\n\nCSS 변수로 테마 전환 버튼을 만듭니다.",
+  "problems": []
+ },
+ {
+  "id": "c36",
+  "text": "로그인 기능 직접 구현\n\nAuth0 비용이 부담되니 비밀번호 해시를 우리 DB에 저장하고 로그인·비밀번호 재설정을 직접 만듭시다.",
+  "problems": [
+   "458770:1"
+  ]
+ },
+ {
+  "id": "c37",
+  "text": "Spike: should we revisit Kafka once we pass 5,000 messages per second?\n\nWrite a one-page analysis only; no implementation.",
+  "problems": []
+ },
+ {
+  "id": "c38",
+  "text": "Add a Redis cache for the exchange-rate lookup\n\nCache FX rates from the provider for 5 minutes.",
+  "problems": []
+ },
+ {
+  "id": "c39",
+  "text": "Refund endpoint\n\nAdd POST /v1/refunds that moves money back to the customer. Retries can just send the request again.",
+  "problems": [
+   "491523:1"
+  ]
+ },
+ {
+  "id": "c40",
+  "text": "Use Memcached for session caching\n\nMemcached is simpler than Redis for sessions.",
+  "problems": [
+   "X10"
+  ]
+ },
+ {
+  "id": "c41",
+  "text": "Add Terraform module for the SQS dead-letter queue",
+  "problems": []
+ },
+ {
+  "id": "c42",
+  "text": "Amounts in the partner API as decimal strings\n\nPartners prefer \"12.50\" over 1250; change the API to return decimal strings.",
+  "problems": [
+   "X01"
+  ]
+ },
+ {
+  "id": "c43",
+  "text": "New feature: scheduled transfers\n\nImplement scheduled transfers inside the existing ledger service, with an SQS delayed message to trigger execution.",
+  "problems": []
+ },
+ {
+  "id": "c44",
+  "text": "Rewrite the web app's data layer from Redux to TanStack Query\n\nMigrate the remaining Redux slices on the accounts screen.",
+  "problems": []
+ },
+ {
+  "id": "c45",
+  "text": "Write ledger code without review to unblock release\n\nMerge the ledger rounding fix with one approval from the Payments team since Platform is on holiday.",
+  "problems": [
+   "X11"
+  ]
+ },
+ {
+  "id": "h01",
+  "text": "Event backbone on Amazon MSK\n\nManaged streaming is fine now that AWS runs the brokers for us. Create an MSK cluster and have the ledger publish transfer events to a topic.",
+  "problems": [
+   "458753:1"
+  ]
+ },
+ {
+  "id": "h02",
+  "text": "Persist partner payloads in Couchbase\n\nCouchbase documents map directly to the JSON partners send; we keep the account tables in Postgres but write transactions to Couchbase.",
+  "problems": [
+   "65699:1"
+  ]
+ },
+ {
+  "id": "h03",
+  "text": "Document that we will not use MongoDB\n\nAdd a FAQ entry to the onboarding page explaining why the ledger does not use MongoDB.",
+  "problems": []
+ },
+ {
+  "id": "h04",
+  "text": "Partner portal: Apollo Server endpoint\n\nPartners integrating the new portal SDK will query accounts through an Apollo Server endpoint at api.tallyfold.com/partner/graph.",
+  "problems": [
+   "164005:1"
+  ]
+ },
+ {
+  "id": "h05",
+  "text": "Use Firebase Authentication for the mobile app\n\nFirebase Auth has a nicer React Native SDK than Auth0; sign mobile users in with Firebase.",
+  "problems": [
+   "458770:1"
+  ]
+ },
+ {
+  "id": "h06",
+  "text": "Q4 cleanup bundle\n\nThis ticket groups several small chores: bump eslint, rename the misc folder, update the README badges, regenerate the API client, and while we're at it, store the converted_amount for FX transfers as a double so the UI rounding matches the bank statement. Also fix the flaky date-picker test.",
+  "problems": [
+   "X01"
+  ]
+ },
+ {
+  "id": "h07",
+  "text": "Settlement exporter as a standalone service in Node.js\n\nThe exporter will be a small Node.js service deployed separately from the ledger.",
+  "problems": [
+   "X09",
+   "491523:2"
+  ]
+ },
+ {
+  "id": "h08",
+  "text": "Bulk payouts endpoint\n\nPOST /v1/payouts/bulk accepts up to 500 payouts. Clients must send an Idempotency-Key; on retry we return the original batch result.",
+  "problems": []
+ },
+ {
+  "id": "h09",
+  "text": "대량 송금 API에서 재시도 시 새 요청 ID 사용\n\n타임아웃이 나면 클라이언트가 새로운 요청 ID로 다시 보내도록 안내합니다. 멱등성 키는 이번에는 생략합니다.",
+  "problems": [
+   "491523:1"
+  ]
+ },
+ {
+  "id": "h10",
+  "text": "계좌 잔액 응답을 Redis에 30초 캐시\n\n잔액 조회 트래픽이 많아서 GET /accounts/{id}/balance 응답을 30초 동안 캐시합니다.",
+  "problems": [
+   "X10"
+  ]
+ },
+ {
+  "id": "h11",
+  "text": "파트너 API 금액을 소수점 문자열로 변경\n\n파트너들이 \"12.50\" 형식을 원해서 금액 필드를 문자열로 바꿉니다.",
+  "problems": [
+   "X01"
+  ]
+ },
+ {
+  "id": "h12",
+  "text": "Migrate Jenkins jobs to GitHub Actions\n\nPort the remaining three Jenkins pipelines and shut down the Jenkins box.",
+  "problems": []
+ },
+ {
+  "id": "h13",
+  "text": "Turn off the Redux devtools in production builds",
+  "problems": []
+ },
+ {
+  "id": "h14",
+  "text": "Add a new Redux store for the onboarding wizard\n\nWizard steps fetch and cache server data in a Redux store with RTK Query.",
+  "problems": [
+   "360450:1"
+  ]
+ },
+ {
+  "id": "h15",
+  "text": "Quick fix in AWS console for the SQS visibility timeout\n\nChange it in the console now; no PR needed for a one-line setting.",
+  "problems": [
+   "X02"
+  ]
+ },
+ {
+  "id": "h16",
+  "text": "Send KYC failure details to Sentry\n\nAttach the customer's full name, date of birth and passport number to the Sentry event so support can debug faster.",
+  "problems": [
+   "X07"
+  ]
+ },
+ {
+  "id": "h17",
+  "text": "Discuss: should partner API v2 consider GraphQL?\n\nCollect partner feedback for the architecture review next quarter. No code changes.",
+  "problems": []
+ },
+ {
+  "id": "h18",
+  "text": "Ledger rounding fix\n\nFix rounding in fee calculation using integer cents; PR will get Platform review as usual.",
+  "problems": []
+ },
+ {
+  "id": "h19",
+  "text": "Store user birthdays as local dates\n\nBirthdays are calendar dates, not instants; store them as DATE without timezone.",
+  "problems": []
+ },
+ {
+  "id": "h20",
+  "text": "Spin up a Kafka cluster for the analytics team's clickstream\n\nAnalytics wants clickstream ingestion; they own it but it will run in our AWS account alongside the payment workers.",
+  "problems": [
+   "458753:1"
+  ]
+ },
+ {
+  "id": "h21",
+  "text": "Use Flutter for the internal ops tablet app\n\nWarehouse ops needs a kiosk app; Flutter has the best kiosk support.",
+  "problems": [],
+  "acceptable": [
+   "X06"
+  ]
+ },
+ {
+  "id": "h22",
+  "text": "Put the fraud rules engine inside the ledger service\n\nFraud checks run synchronously before transfer commit, so the rules engine lives in the ledger codebase.",
+  "problems": []
+ },
+ {
+  "id": "h23",
+  "text": "Replace SES with Postmark for receipts\n\nPostmark has better deliverability for receipts.",
+  "problems": [
+   "X12"
+  ]
+ },
+ {
+  "id": "h24",
+  "text": "Datadog synthetic checks for the status page\n\nBuy Datadog Synthetics and alert from Datadog when the public status endpoint fails.",
+  "problems": [
+   "X03"
+  ]
+ }
+]

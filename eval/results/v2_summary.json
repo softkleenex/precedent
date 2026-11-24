@@ -1,0 +1,58 @@
+{
+ "claude-haiku-5-5": {
+  "precision": 0.933,
+  "recall": 1.0,
+  "f1": 0.966,
+  "case_accuracy": 1.0,
+  "tp": 28,
+  "fp": 2,
+  "fn": 0,
+  "errors": 0,
+  "p50_ms": 1677,
+  "max_ms": 4137,
+  "input_tokens": 167167,
+  "output_tokens": 6942
+ },
+ "claude-sonnet-5-5": {
+  "precision": 0.964,
+  "recall": 0.964,
+  "f1": 0.964,
+  "case_accuracy": 0.978,
+  "tp": 27,
+  "fp": 1,
+  "fn": 1,
+  "errors": 0,
+  "p50_ms": 1547,
+  "max_ms": 2344,
+  "input_tokens": 161497,
+  "output_tokens": 6953
+ },
+ "claude-opus-5-5": {
+  "precision": 1.0,
+  "recall": 0.964,
+  "f1": 0.982,
+  "case_accuracy": 0.978,
+  "tp": 27,
+  "fp": 0,
+  "fn": 1,
+  "errors": 0,
+  "p50_ms": 3532,
+  "max_ms": 18195,
+  "input_tokens": 161497,
+  "output_tokens": 9664
+ },
+ "claude-haiku-4-5-20251001": {
+  "precision": 1.0,
+  "recall": 0.964,
+  "f1": 0.982,
+  "case_accuracy": 0.978,
+  "tp": 27,
+  "fp": 0,
+  "fn": 1,
+  "errors": 0,
+  "p50_ms": 1549,
+  "max_ms": 2416,
+  "input_tokens": 126524,
+  "output_tokens": 4924
+ }
+}

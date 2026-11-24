@@ -139,7 +139,16 @@ modules:
       events:
         - avi:jira:created:issue
 
+  # --- Development-only evaluation endpoint (shared-secret protected) ---
+  webtrigger:
+    - key: eval-endpoint
+      function: eval
+      response:
+        type: dynamic
+
   function:
+    - key: eval
+      handler: eval.handler
     - key: resolver
       handler: resolvers.handler
     - key: action-search
