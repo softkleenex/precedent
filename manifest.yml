@@ -1,0 +1,186 @@
+modules:
+  # --- AI: Atlassian-hosted Claude (Runs on Atlassian) ---
+  llm:
+    - key: precedent-llm
+      model:
+        - claude
+
+  # --- Rovo agent ---
+  rovo:agent:
+    - key: decision-keeper
+      name: Decision Keeper
+      description: Knows what your team already decided, and checks new work against it.
+      prompt: >
+        You are Decision Keeper, a teammate who remembers the engineering and product decisions
+        recorded in this site's Confluence (ADRs, design docs, meeting notes).
+
+        Use search-decisions to answer questions like "why do we use X?" or "did we ever decide on Y?".
+        Use check-issue to review a Jira issue, and check-plan to review a proposal or implementation plan.
+
+        Always cite the decision's source page and quote it. Never claim a decision exists unless a
+        tool returned it. If tools return nothing relevant, say that no decision is recorded and suggest
+        documenting one in Confluence with the "decision" label.
+
+        When work conflicts with a decision, say so plainly, quote both sides, and suggest either
+        changing the plan or opening a discussion to revisit the decision. Keep answers short.
+      conversationStarters:
+        - What has the team decided about our database?
+        - Does this issue conflict with any team decision?
+        - Check my implementation plan against our decisions
+      actions:
+        - search-decisions
+        - get-decision
+        - check-plan
+        - check-issue
+      skills:
+        - precedent-check
+
+  # --- Reusable Rovo skill for any agent ---
+  rovo:skill:
+    - key: precedent-check
+      source:
+        dir: skills/precedent-check
+      dependencies:
+        tools:
+          - search-decisions
+          - check-plan
+
+  # --- MCP server: the same actions, exposed to Claude Code / Cursor / any MCP client ---
+  rovo:mcp:
+    - key: precedent-mcp
+      name: Precedent
+      tools:
+        - search-decisions
+        - get-decision
+        - check-plan
+        - check-issue
+
+  action:
+    - key: search-decisions
+      name: Search team decisions
+      function: action-search
+      actionVerb: GET
+      description: >
+        Search the team's recorded decisions (from Confluence ADRs and design docs) by topic.
+        Returns each decision with what was rejected, why, a verbatim quote and the source page.
+        Use before choosing a technology, library, architecture or process.
+      inputs:
+        query:
+          title: Topic
+          type: string
+          required: true
+          description: Topic or keywords, e.g. "database", "authentication", "message queue"
+    - key: get-decision
+      name: Get decision
+      function: action-get
+      actionVerb: GET
+      description: Get the full record of one team decision by its id (as returned by search-decisions).
+      inputs:
+        decisionId:
+          title: Decision id
+          type: string
+          required: true
+          description: The decision id, e.g. "65538:1"
+    - key: check-plan
+      name: Check plan against decisions
+      function: action-check-plan
+      actionVerb: GET
+      description: >
+        Check an implementation plan or proposal against the team's recorded decisions BEFORE writing code.
+        Returns STOP with quoted conflicts if the plan contradicts a decision or revisits a rejected option,
+        otherwise OK.
+      inputs:
+        plan:
+          title: Plan
+          type: string
+          required: true
+          description: A few sentences describing what will be built or changed and with which technologies
+    - key: check-issue
+      name: Check Jira issue against decisions
+      function: action-check-issue
+      actionVerb: GET
+      description: Check a Jira issue's summary and description against the team's recorded decisions.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: false
+          description: Jira issue key such as PROJ-123. Optional when the agent is opened on an issue.
+
+  # --- Jira: issue panel ---
+  jira:issuePanel:
+    - key: precedent-issue-panel
+      resource: issue-panel
+      resolver:
+        function: resolver
+      render: native
+      title: Precedent
+      icon: resource:static;icon.svg
+
+  # --- Confluence: registry page ---
+  confluence:globalPage:
+    - key: precedent-registry
+      resource: registry
+      resolver:
+        function: resolver
+      render: native
+      title: Precedent — Decisions
+      route: precedent
+
+  # --- Product events ---
+  trigger:
+    - key: page-changed
+      function: on-page-changed
+      events:
+        - avi:confluence:created:page
+        - avi:confluence:updated:page
+    - key: issue-created
+      function: on-issue-created
+      events:
+        - avi:jira:created:issue
+
+  function:
+    - key: resolver
+      handler: resolvers.handler
+    - key: action-search
+      handler: actions.searchDecisions
+    - key: action-get
+      handler: actions.getDecisionById
+    - key: action-check-plan
+      handler: actions.checkPlan
+    - key: action-check-issue
+      handler: actions.checkIssue
+    - key: on-page-changed
+      handler: events.onPageChanged
+    - key: on-issue-created
+      handler: events.onIssueCreated
+
+resources:
+  - key: issue-panel
+    path: src/frontend/issuePanel.jsx
+  - key: registry
+    path: src/frontend/registry.jsx
+  - key: static
+    path: static
+
+permissions:
+  scopes:
+    - storage:app
+    - read:jira-work
+    - write:jira-work
+    - search:confluence
+    - read:page:confluence
+    - read:label:confluence
+    - read:confluence-content.summary
+
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  compatibility:
+    jira:
+      required: true
+    confluence:
+      required: false
+  id: ari:cloud:ecosystem::app/d461354f-ea80-4fd5-b6ac-207c677f72cd
