@@ -13,43 +13,40 @@ Precedent is a Forge app that turns those pages into a quote-backed decision reg
 | Claude Code / Cursor / any MCP client | `check-plan` tool returns **STOP** with the conflicting decision before code is written |
 | Rovo chat | *Decision Keeper* agent answers "why do we use X?" with the source page |
 
-Built entirely on Forge — UI Kit, Forge LLMs (Atlassian-hosted Claude), KVS, product events, `rovo:agent`, `rovo:skill`, `rovo:mcp`. No external servers, no API keys: **Runs on Atlassian** eligible.
+Built entirely on Forge — UI Kit, KVS, product events, `rovo:agent`, `rovo:skill`, `rovo:mcp`. No external servers, no API keys, **no AI bill**: extraction and checks are deterministic, and judgement is delegated to the agent already in the loop (Claude Code, Cursor, Rovo). **Runs on Atlassian** eligible.
 
-## Why trust it: every claim carries a verbatim quote
+## Why trust it: everything is quoted, nothing is invented
 
-LLMs make things up. Precedent never shows a decision or a conflict it can't back with text:
+1. **Extraction is structural, not generative.** Precedent reads what ADRs and meeting notes already contain — `Status`, `Date`, the *Decision* section, *Alternatives considered*, *Revisit when*, `Decision:` bullets — and copies it. A decision can't appear in the registry unless it's written on the page.
+2. **Checks quote both sides.** A finding shows the exact sentence of the issue or plan and the exact decision text, with a link to the page.
+3. **Paraphrases are caught, noise is not.** A technology knowledge base maps paraphrases (Amazon MSK → Kafka, Apollo → GraphQL, Couchbase → document DB) and flags a different choice in a decided category (RabbitMQ when the team chose SQS). Negations ("we do not use Kafka"), migrations away, research spikes and scoped exceptions ("internal tools may use whatever fits") are ignored.
+4. **Agents do the judgement.** `check-plan` returns STOP for clear conflicts and REVIEW with the related decisions otherwise, so Claude Code / Cursor / Rovo can reason about obligation-style rules ("every money-moving endpoint must require an Idempotency-Key").
 
-1. **Extraction** — the model must return the decision with a verbatim quote from the page. If the quote isn't found in the page, the decision is dropped.
-2. **Checking** — every finding must quote the exact words of the issue/plan that collide with the decision. Findings whose quote isn't in the text are dropped.
-3. **Scope awareness** — exceptions ("internal tools may use anything") and revisit conditions ("revisit above 5,000 msg/s") are extracted too, so the check doesn't cry wolf on allowed work or on a research spike.
+## Measured
 
-## Measured, not vibes
-
-`eval/` contains 69 labelled work items (English and Korean) against 20 decisions — 8 extracted live from Confluence plus 12 distractors — including paraphrases (Amazon MSK ⇒ Kafka, Couchbase ⇒ document DB), negations, buried conflicts in long tickets, scoped exceptions and multi-decision conflicts. `eval/run.py` drives the **deployed** Forge code path through a secret-protected dev web trigger, repeated 3× per model.
-
-See [`eval/RESULTS.md`](eval/RESULTS.md) for precision/recall per model and what each prompt change fixed.
+`eval/` holds 69 labelled work items (7 in Korean) against 20 decisions. The shipped rules score **precision 1.000, recall 0.814** at zero cost — `node eval/run_rules.mjs`. We also benchmarked an LLM pipeline (Haiku/Sonnet/Opus 5.5, F1 up to 0.992) and explain in [`eval/RESULTS.md`](eval/RESULTS.md) why we moved judgement to the calling agent instead.
 
 ## Architecture
 
 ```
-Confluence page created/updated ──► on-page-changed ──► extract (Forge LLM) ──► quote check ──► KVS registry
-Jira issue created ───────────────► on-issue-created ─► check (Forge LLM) ───► quote check ──► comment + cache
+Confluence page created/updated ──► on-page-changed ──► parse.js (structure) ──► KVS registry
+Jira issue created ───────────────► on-issue-created ─► rules.js + tech.js ──► comment + cache
 Jira issue panel (UI Kit) ────────► resolver ─────────► check (cached by content hash)
 Rovo agent / rovo:skill / rovo:mcp ─► actions: search-decisions · get-decision · check-plan · check-issue
 ```
 
-- `src/lib/extract.js` — decision extraction + verification
-- `src/lib/check.js` — conflict check, evidence gate, moderation fallback
-- `src/lib/text.js` — normalisation, quote matching, keyword retrieval (pure, unit-testable)
+- `src/lib/parse.js` — structural decision extraction from Confluence storage format
+- `src/lib/rules.js` — conflict rules (rejections, category conflicts, prohibitions, exceptions, negation)
+- `src/lib/tech.js` — technology categories and aliases
+- `src/lib/text.js` — normalisation and keyword retrieval
 - `src/actions.js` — the four tools shared by the agent, the skill and the MCP server
 - `src/events.js` — page and issue triggers
 - `src/frontend/` — issue panel and Confluence registry page (UI Kit)
 
 ### Cost and safety controls
-- Forge LLM calls use Claude Haiku and a per-site daily cap.
-- Issue checks are cached per issue by content hash; unchanged pages are never re-extracted.
+- No LLM calls in the app: nothing to bill, nothing leaves the site, results are reproducible.
+- Issue checks are cached per issue by content hash; unchanged pages are never re-parsed.
 - Reads in the issue panel and actions run `asUser()`, so nobody sees decisions or issues they can't already see.
-- If Atlassian's AI moderation declines a prompt (e.g. an issue full of personal data), Precedent says so and falls back to keyword-matched related decisions instead of failing.
 
 ## Install (judges / testers)
 
@@ -71,7 +68,7 @@ Rovo agent / rovo:skill / rovo:mcp ─► actions: search-decisions · get-decis
 npm install
 forge deploy -e development
 forge install -p Jira -s <site> -e development && forge install -p Confluence -s <site> -e development
-python3 eval/run.py claude-haiku-5-5 --repeat 3   # needs the dev web trigger URL + token in ~/.config/precedent/
+npm test && node eval/run_rules.mjs
 ```
 
 ## License

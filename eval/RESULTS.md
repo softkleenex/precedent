@@ -1,48 +1,36 @@
 # Evaluation results
 
-All numbers come from the **deployed** Forge app (development environment), called through a secret-protected web trigger, so they measure the real prompt, model, retrieval and quote-verification path.
+## Shipped pipeline: deterministic, zero AI cost
+Precedent ships **without any LLM calls**. Extraction reads the structure teams already use for ADRs and meeting notes (`src/lib/parse.js`); checks combine explicit rejections with a small technology-category knowledge base (`src/lib/rules.js`, `src/lib/tech.js`). Deeper judgement is delegated to the agent that is already in the loop — Claude Code, Cursor or Rovo — through the MCP/Rovo tools, which return the flagged conflicts **and** the related decisions to reason about.
 
-## Conflict check — 69 labelled work items, 20 decisions
-Decisions: 8 extracted live from Confluence ADRs/meeting notes + 12 distractors (money representation, IaC, observability, flags, time zones, mobile, PII, CI, language, caching, code review, email).
-Cases: obvious conflicts, paraphrases (Amazon MSK ⇒ Kafka, Couchbase ⇒ document DB, Apollo ⇒ GraphQL, Firebase Auth ⇒ own auth), negations ("document that we will *not* use MongoDB"), conflicts buried in long chore tickets, scoped exceptions (internal tools, JSONB), research spikes, superseded decisions, multi-decision conflicts, and 7 Korean tickets against English decisions.
-Scoring: a finding counts if its decision id and relation (conflicts / revisits) match the label; "follows" is context and is not scored. Pairs labelled *acceptable* (defensible either way) are ignored.
-
-### Iterations
-| Version | Change | Model | Precision | Recall | F1 |
-|---|---|---|---|---|---|
-| v1 (45 cases) | baseline prompt | Haiku 5.5 | 0.875 | 1.000 | 0.933 |
-| v2 (45 cases) | extract `exceptions` + `revisitWhen`; prompt respects scope, ignores spikes | Haiku 5.5 | 0.933 | 1.000 | 0.966 |
-| v4 (69 cases ×3) | +24 hard cases, PII moderation fallback | Haiku 4.5 | 0.976 | 0.984 | 0.980 |
-| v4 | | Haiku 5.5 | 0.962 | 0.992 | 0.977 |
-| v4 | | Sonnet 5.5 | **1.000** | 0.984 | **0.992** |
-| v4 | | Opus 5.5 | **1.000** | 0.984 | **0.992** |
-| v5 (69 cases ×1) | top-15 retrieval (smaller prompt) | Haiku 5.5 | 1.000 | 1.000 | 1.000 |
-
-v4 recall misses for Sonnet/Opus were rate-limit errors (Forge LLM per-tenant token limit), not wrong answers.
-v5 is a single run: treat it as "no regression from the smaller prompt", not as a perfect model.
-
-### Model choice
-Sonnet 5.5 and Opus 5.5 had zero false alarms but cost 4× and 8× more per token than Haiku 5.5; Opus is also ~3× slower (p50 4.6 s vs 1.6 s).
-Precedent ships with **Haiku 5.5**: its occasional extra finding is filtered by the quote gate or is a defensible adjacent decision, and it keeps the developer's Forge LLM bill low.
-
-### Findings that changed the product
-- **Scope matters more than model size.** The biggest gain (v1→v2) came from extracting each decision's exceptions and revisit conditions, not from a bigger model.
-- **Atlassian AI moderation blocks some prompts.** Tickets containing personal data (name + date of birth + passport number) are refused as PII. Precedent now reports this in the panel and falls back to keyword-matched related decisions.
-- **Per-tenant token limits exist** (500k tokens per model per window in development). The daily call cap and content-hash caching keep normal use far below it.
-
-## Decision extraction — 8 pages ×2
-Pages: a retro with no decisions, an accepted ADR with a rejected alternative, a superseded ADR, meeting notes with numbered decisions and a deferred item, a Korean ADR, a proposal, coding conventions, and a scoped ADR.
-Checks: decision count range, key facts present, rejected options captured, status (superseded / proposed), scope exceptions captured.
-
-| Model | Pages fully correct |
-|---|---|
-| Haiku 5.5 | 16/16 after relabelling e02 (the extra decision, "secrets rotate every 90 days", is legitimate) |
-
-Hallucination guard: across all extraction runs, 0 decisions were dropped for a missing quote on real Confluence pages.
-
-## Reproduce
+Run it yourself, free and offline:
 ```bash
-python3 eval/run.py claude-haiku-5-5 --repeat 3 --tag mine
-python3 eval/run_extract.py claude-haiku-5-5
+node eval/run_rules.mjs --verbose
 ```
-Cost note: Forge LLM usage is billed to the app developer; a 69-case run costs about $0.15 on Haiku 5.5 and about $1.30 on Opus 5.5.
+
+### Conflict check — 69 labelled work items, 20 decisions
+Decisions: 7 parsed from the live Confluence ADRs/meeting notes (`eval/pages.json`) + 12 distractors.
+Cases: obvious conflicts, paraphrases (Amazon MSK ⇒ Kafka, Couchbase ⇒ document DB, Apollo ⇒ GraphQL, Firebase Auth ⇒ Auth0 category), negations, conflicts buried in long chore tickets, scoped exceptions (internal tools, JSONB), research spikes, migrations away from rejected tools, superseded decisions, multi-decision conflicts, and 7 Korean tickets against English decisions.
+
+| Pipeline | Precision | Recall | F1 | Cost per check |
+|---|---|---|---|---|
+| Rules v1 | 0.969 | 0.721 | 0.827 | $0 |
+| **Rules v2 (shipped)** — sentence split fix, negated-partner exception, Korean aliases, prohibition clauses | **1.000** | **0.814** | **0.897** | **$0** |
+
+Zero false alarms. The 8 remaining misses are obligation-style rules that keywords can't judge ("every money-moving endpoint must require an Idempotency-Key", "PII must never be written to logs", "ledger PRs need two approvals") — exactly the cases handed to the calling agent as *related decisions*.
+
+### End-to-end with Claude Code (MCP)
+Prompt: *"Store transaction history in MongoDB so we can keep arbitrary fields without migrations."*
+`check-plan` → **STOP** quoting ADR-001. Claude Code wrote no code, cited the ADR and its URL, also applied the related meeting-notes decision ("new features go into the existing ledger service"), and proposed a JSONB column — the alternative the same ADR allows. Transcript: `../demo_run2.jsonl`.
+
+## What we tried first: LLM extraction and checking (Forge LLMs)
+Before shipping, the same 69 cases were run through an LLM pipeline (Forge LLMs, quote-verified structured output) on the deployed app:
+
+| Model | Precision | Recall | F1 |
+|---|---|---|---|
+| Haiku 5.5 (baseline prompt, 45 cases) | 0.875 | 1.000 | 0.933 |
+| Haiku 5.5 (scope-aware prompt) | 0.962 | 0.992 | 0.977 |
+| Sonnet 5.5 | 1.000 | 0.984 | 0.992 |
+| Opus 5.5 | 1.000 | 0.984 | 0.992 |
+
+LLMs catch the obligation-style cases rules miss, but every check is billed to the app developer, Atlassian AI moderation refuses some tickets (personal data), and per-tenant token limits apply. Since every Precedent surface that matters for agents already has an LLM on the calling side, we moved judgement there and kept the app free to run. The biggest lesson carried over: **scope beats model size** — extracting each decision's exceptions and revisit conditions fixed more false alarms than switching to a larger model.

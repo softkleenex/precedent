@@ -117,7 +117,7 @@ function SourcesTab({ onSynced }) {
         <Text key={i} size="small">
           {r.error
             ? `✗ ${r.title}: ${r.error}`
-            : `${r.skipped ? '• unchanged' : '✓ synced'} — ${r.title}: ${r.count} decisions`}
+            : `${r.skipped ? '• unchanged' : '✓ synced'} — ${r.title}: ${r.count} ${r.count === 1 ? 'decision' : 'decisions'}`}
         </Text>
       ))}
       {pages && log.length === 0 && (
