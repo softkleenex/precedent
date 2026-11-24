@@ -4,3 +4,5 @@ node_modules/
 /.forge/
 __pycache__/
 *.pyc
+.claude/
+.mcp.json
