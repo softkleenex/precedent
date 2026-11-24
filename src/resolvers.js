@@ -1,12 +1,12 @@
 // Backend for the UI Kit screens (Jira issue panel + Confluence registry page).
 
 import Resolver from '@forge/resolver';
-import { checkAgainstDecisions } from './lib/check';
-import { findDecisionPages } from './lib/confluence';
-import { syncPage } from './lib/extract';
-import { readIssueText } from './lib/jira';
-import { getCachedCheck, getSettings, listDecisions, saveSettings, setCachedCheck, removePage } from './lib/store';
-import { hash } from './lib/text';
+import { checkAgainstDecisions } from './lib/check.js';
+import { findDecisionPages } from './lib/confluence.js';
+import { syncPage } from './lib/extract.js';
+import { readIssueText } from './lib/jira.js';
+import { getCachedCheck, getSettings, listDecisions, saveSettings, setCachedCheck, removePage } from './lib/store.js';
+import { hash } from './lib/text.js';
 
 const resolver = new Resolver();
 

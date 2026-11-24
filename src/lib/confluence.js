@@ -1,7 +1,7 @@
 // Confluence access: find decision pages and read their content.
 
 import api, { route } from '@forge/api';
-import { storageToText } from './text';
+import { storageToText } from './text.js';
 
 // A page is treated as a decision source if it carries one of these labels
 // or its title looks like an Architecture Decision Record.
@@ -38,6 +38,7 @@ export async function readPage(pageId) {
     version: page.version?.number,
     createdAt: page.createdAt,
     url: page._links?.webui ? `${base}${page._links.webui}` : undefined,
+    storage: page.body?.storage?.value || '',
     text: storageToText(page.body?.storage?.value || ''),
   };
 }

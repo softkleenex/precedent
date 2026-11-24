@@ -1,0 +1,225 @@
+{
+ "summary": {
+  "precision": 1,
+  "recall": 0.814,
+  "f1": 0.897,
+  "case_accuracy": 0.884,
+  "tp": 35,
+  "fp": 0,
+  "fn": 8,
+  "cases": 69
+ },
+ "misses": [
+  {
+   "id": "c11",
+   "expected": [
+    "491523:1"
+   ],
+   "got": [],
+   "quotes": []
+  },
+  {
+   "id": "c19",
+   "expected": [
+    "X07"
+   ],
+   "got": [],
+   "quotes": []
+  },
+  {
+   "id": "c39",
+   "expected": [
+    "491523:1"
+   ],
+   "got": [],
+   "quotes": []
+  },
+  {
+   "id": "c45",
+   "expected": [
+    "X11"
+   ],
+   "got": [],
+   "quotes": []
+  },
+  {
+   "id": "h09",
+   "expected": [
+    "491523:1"
+   ],
+   "got": [],
+   "quotes": []
+  },
+  {
+   "id": "h10",
+   "expected": [
+    "X10"
+   ],
+   "got": [],
+   "quotes": []
+  },
+  {
+   "id": "h11",
+   "expected": [
+    "X01"
+   ],
+   "got": [],
+   "quotes": []
+  },
+  {
+   "id": "h16",
+   "expected": [
+    "X07"
+   ],
+   "got": [],
+   "quotes": []
+  }
+ ],
+ "decisions": [
+  {
+   "title": "PostgreSQL as the system of record",
+   "decision": "We use PostgreSQL as the single system of record for all ledger and account data.",
+   "alternativesRejected": [
+    "MongoDB",
+    "DynamoDB"
+   ],
+   "rationale": "DynamoDB: rejected because reporting queries would need a separate analytics copy.",
+   "status": "accepted",
+   "date": "2026-02-11",
+   "quote": "We use PostgreSQL as the single system of record for all ledger and account data. We will not introduce MongoDB or any other document database for ledger, transaction or account data.",
+   "exceptions": "Flexible metadata may be stored in a JSONB column instead of a new database.",
+   "revisitWhen": "",
+   "chosen": [
+    "PostgreSQL"
+   ],
+   "keywords": [
+    "MongoDB",
+    "PostgreSQL"
+   ],
+   "id": "65699:1",
+   "pageTitle": "ADR-001: PostgreSQL as the system of record"
+  },
+  {
+   "title": "Use SQS for asynchronous jobs, not Kafka",
+   "decision": "We use Amazon SQS queues for asynchronous work.",
+   "alternativesRejected": [
+    "Kafka"
+   ],
+   "rationale": "",
+   "status": "accepted",
+   "date": "2026-03-04",
+   "quote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
+   "exceptions": "",
+   "revisitWhen": "Revisit if we need ordered event replay across services or exceed 5,000 messages per second. Revisit when",
+   "chosen": [
+    "SQS"
+   ],
+   "keywords": [
+    "Kafka",
+    "SQS"
+   ],
+   "id": "458753:1",
+   "pageTitle": "ADR-002: Use SQS for asynchronous jobs, not Kafka"
+  },
+  {
+   "title": "Public partner API is REST with OpenAPI",
+   "decision": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/).",
+   "alternativesRejected": [
+    "GraphQL"
+   ],
+   "rationale": "We decided not to offer GraphQL to partners, because per-field authorization and query cost limits are hard to audit for a regulated payments API.",
+   "status": "accepted",
+   "date": "2026-04-22",
+   "quote": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/). We decided not to offer GraphQL to partners, because per-field authorization and query cost limits are hard to audit for a regulated payments API.",
+   "exceptions": "Internal tools may use whatever fits, but anything partners call must be in the OpenAPI spec.",
+   "revisitWhen": "",
+   "chosen": [
+    "REST"
+   ],
+   "keywords": [
+    "REST",
+    "GraphQL"
+   ],
+   "id": "164005:1",
+   "pageTitle": "ADR-003: Public partner API is REST with OpenAPI"
+  },
+  {
+   "title": "Authentication through Auth0 (OIDC)",
+   "decision": "All user sign-in goes through Auth0 using OIDC.",
+   "alternativesRejected": [
+    "passwords or build our own login"
+   ],
+   "rationale": "Rationale: SOC 2 scope is smaller when credentials never touch our database, and Auth0 already provides MFA.",
+   "status": "accepted",
+   "date": "2026-05-09",
+   "quote": "All user sign-in goes through Auth0 using OIDC. We will not store passwords or build our own login, password reset or MFA flows.",
+   "exceptions": "",
+   "revisitWhen": "",
+   "chosen": [
+    "Auth0"
+   ],
+   "keywords": [
+    "own login",
+    "Auth0"
+   ],
+   "id": "458770:1",
+   "pageTitle": "ADR-004: Authentication through Auth0 (OIDC)"
+  },
+  {
+   "title": "Frontend server state with TanStack Query",
+   "decision": "New frontend code uses TanStack Query for server state.",
+   "alternativesRejected": [
+    "Redux"
+   ],
+   "rationale": "",
+   "status": "accepted",
+   "date": "2026-06-17",
+   "quote": "New frontend code uses TanStack Query for server state. Redux is superseded and must not be added to new screens; existing Redux slices are migrated when touched.",
+   "exceptions": "",
+   "revisitWhen": "",
+   "chosen": [
+    "TanStack Query"
+   ],
+   "keywords": [
+    "TanStack Query",
+    "Redux"
+   ],
+   "id": "360450:1",
+   "pageTitle": "ADR-005: Frontend server state with TanStack Query"
+  },
+  {
+   "title": "Every endpoint that moves money must require an Idempotency-Key header, and retries…",
+   "decision": "every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+   "alternativesRejected": [],
+   "rationale": "",
+   "status": "accepted",
+   "date": "2026-10-14",
+   "quote": "every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+   "exceptions": "",
+   "revisitWhen": "",
+   "chosen": [],
+   "keywords": [],
+   "id": "491523:1",
+   "pageTitle": "2026-10-14 Platform sync — meeting notes"
+  },
+  {
+   "title": "No new microservices until the ledger monolith has full test coverage on transfers;…",
+   "decision": "no new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+   "alternativesRejected": [],
+   "rationale": "",
+   "status": "accepted",
+   "date": "2026-10-14",
+   "quote": "no new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+   "exceptions": "",
+   "revisitWhen": "",
+   "chosen": [
+    "monolith"
+   ],
+   "keywords": [
+    "monolith"
+   ],
+   "id": "491523:2",
+   "pageTitle": "2026-10-14 Platform sync — meeting notes"
+  }
+ ]
+}

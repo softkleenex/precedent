@@ -120,14 +120,26 @@ function App() {
         <Button appearance="subtle" onClick={() => run(true)}>Re-check</Button>
       </Inline>
       {result.findings.length === 0 && (
-        <Text>No recorded decision is affected ({result.considered} relevant decisions checked).</Text>
+        <Text>No recorded decision is contradicted ({result.considered} decisions checked).</Text>
       )}
       {result.findings.map((f, i) => (
         <Finding key={`${f.decisionId}-${i}`} f={f} />
       ))}
+      {(result.related || []).length > 0 && (
+        <Stack space="space.050">
+          <Text weight="bold">Related decisions</Text>
+          {result.related.map((r) => (
+            <Text key={r.decisionId} size="small">
+              {r.pageUrl ? <Link href={r.pageUrl} openNewTab>{r.decisionTitle}</Link> : r.decisionTitle}
+              {` — ${r.decision}`}
+            </Text>
+          ))}
+        </Stack>
+      )}
       <Box>
         <Text size="small">
-          Every finding is backed by a quote found in this issue and in the source page.
+          Findings quote the exact sentence of this issue and of the decision page. Checks are rule-based and run on
+          Atlassian, with no AI cost and no data leaving your site.
         </Text>
       </Box>
     </Stack>

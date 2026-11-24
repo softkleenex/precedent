@@ -1,7 +1,7 @@
 // Jira access: read an issue's text and post Precedent's findings as a comment.
 
 import api, { route } from '@forge/api';
-import { adfToText } from './text';
+import { adfToText } from './text.js';
 
 /** Summary + description of an issue as plain text. */
 export async function readIssueText(issueKey, { asUser = false } = {}) {

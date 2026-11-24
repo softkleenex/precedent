@@ -4,10 +4,10 @@
 //   3. other Rovo agents that reuse them as tools.
 // Each returns plain text, which is what agents read best.
 
-import { checkAgainstDecisions, formatFindings } from './lib/check';
-import { listDecisions, getDecision } from './lib/store';
-import { rankDecisions } from './lib/text';
-import { readIssueText } from './lib/jira';
+import { checkAgainstDecisions, formatFindings } from './lib/check.js';
+import { listDecisions, getDecision } from './lib/store.js';
+import { rankDecisions } from './lib/text.js';
+import { readIssueText } from './lib/jira.js';
 
 function formatDecision(d) {
   return (
@@ -43,8 +43,10 @@ export async function checkPlan(payload) {
   const result = await checkAgainstDecisions(plan);
   const head =
     result.verdict === 'conflict'
-      ? 'STOP: the plan conflicts with recorded team decisions. Ask the user before proceeding.'
-      : 'OK: no conflicts with recorded team decisions.';
+      ? 'STOP: the plan conflicts with recorded team decisions. Do not write the code; show the user the conflict and ask how to proceed.'
+      : result.related?.length
+        ? 'REVIEW: no automatic conflict found, but the decisions below are related. Read them; if your plan contradicts any of them, treat it as STOP.'
+        : 'OK: no recorded decision is related to this plan.';
   return `${head}\n${formatFindings(result)}`;
 }
 

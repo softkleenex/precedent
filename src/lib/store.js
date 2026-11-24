@@ -6,7 +6,8 @@
 //   check:<issueKey>       -> cached conflict check for a Jira issue
 //   settings               -> app settings (e.g. auto-comment on new issues)
 
-import kvs, { WhereConditions } from '@forge/kvs';
+// Named import: the package's default export is not reliably interop'd by the bundler.
+import { kvs, WhereConditions } from '@forge/kvs';
 
 /** Read every value whose key starts with `prefix` (follows pagination). */
 async function listByPrefix(prefix) {

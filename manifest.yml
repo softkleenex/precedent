@@ -1,10 +1,4 @@
 modules:
-  # --- AI: Atlassian-hosted Claude (Runs on Atlassian) ---
-  llm:
-    - key: precedent-llm
-      model:
-        - claude
-
   # --- Rovo agent ---
   rovo:agent:
     - key: decision-keeper
@@ -16,6 +10,8 @@ modules:
 
         Use search-decisions to answer questions like "why do we use X?" or "did we ever decide on Y?".
         Use check-issue to review a Jira issue, and check-plan to review a proposal or implementation plan.
+        The check tools flag clear conflicts automatically and also return related decisions; read those
+        related decisions yourself and decide whether the work contradicts them.
 
         Always cite the decision's source page and quote it. Never claim a decision exists unless a
         tool returned it. If tools return nothing relevant, say that no decision is recorded and suggest
@@ -139,16 +135,7 @@ modules:
       events:
         - avi:jira:created:issue
 
-  # --- Development-only evaluation endpoint (shared-secret protected) ---
-  webtrigger:
-    - key: eval-endpoint
-      function: eval
-      response:
-        type: dynamic
-
   function:
-    - key: eval
-      handler: eval.handler
     - key: resolver
       handler: resolvers.handler
     - key: action-search

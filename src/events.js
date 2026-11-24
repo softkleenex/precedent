@@ -1,11 +1,11 @@
 // Product event handlers: keep the registry fresh and flag new issues automatically.
 
-import { checkAgainstDecisions } from './lib/check';
-import { DECISION_LABELS, pageLabels } from './lib/confluence';
-import { syncPage } from './lib/extract';
-import { addFindingsComment, readIssueText } from './lib/jira';
-import { getPageRecord, getSettings, removePage, setCachedCheck } from './lib/store';
-import { hash } from './lib/text';
+import { checkAgainstDecisions } from './lib/check.js';
+import { DECISION_LABELS, pageLabels } from './lib/confluence.js';
+import { syncPage } from './lib/extract.js';
+import { addFindingsComment, readIssueText } from './lib/jira.js';
+import { getPageRecord, getSettings, removePage, setCachedCheck } from './lib/store.js';
+import { hash } from './lib/text.js';
 
 /** Confluence page created/updated: re-extract if it is (or was) a decision page. */
 export async function onPageChanged(event) {
@@ -18,7 +18,7 @@ export async function onPageChanged(event) {
 
   if (isDecisionPage) {
     const result = await syncPage(pageId);
-    console.log(`Synced page ${pageId}: ${result.count} decisions (${result.dropped} dropped by quote check)`);
+    console.log(`Synced page ${pageId}: ${result.count} decisions`);
   } else if (known) {
     // The page lost its decision label: forget its decisions.
     await removePage(pageId);
