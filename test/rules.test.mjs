@@ -49,3 +49,41 @@ test('flags a different technology in the chosen category', () => {
   const r = ruleCheck('Set up RabbitMQ for the webhook workers.', [sqs]);
   assert.equal(r.findings[0].relation, 'conflicts');
 });
+
+// Obligation / prohibition decisions (src/lib/policy.js).
+const pii = { id: 'pii', title: 'PII', decision: 'PII is encrypted with KMS; PII must never be written to logs.', alternativesRejected: [], status: 'accepted' };
+const idem = { id: 'idem', title: 'Idempotency', decision: 'Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.', alternativesRejected: [], status: 'accepted' };
+const prs = { id: 'prs', title: 'Ledger reviews', decision: 'Pull requests that touch the ledger package need two approvals, one from the Platform team.', alternativesRejected: [], status: 'accepted' };
+
+test('flags work that does what a prohibition forbids', () => {
+  assert.equal(ruleCheck('Send the customer date of birth and passport number to Sentry.', [pii]).verdict, 'conflict');
+  assert.equal(ruleCheck('Mask the date of birth before it is logged.', [pii]).verdict, 'clear');
+  assert.equal(ruleCheck('Log the payout id on failure.', [pii]).verdict, 'clear');
+});
+
+test('flags skipped or contradicted obligations inside their scope', () => {
+  assert.equal(ruleCheck('Refund API: retry a timed-out refund with a fresh request id.', [idem]).verdict, 'conflict');
+  assert.equal(ruleCheck('송금 API 재시도 시 멱등성 키는 생략합니다.', [idem]).verdict, 'conflict');
+  assert.equal(ruleCheck('Retry payouts and reuse the same Idempotency-Key.', [idem]).verdict, 'clear');
+  assert.equal(ruleCheck('Merge the ledger fix with one approval.', [prs]).verdict, 'conflict');
+  assert.equal(ruleCheck('Ledger fix merged after two approvals including Platform.', [prs]).verdict, 'clear');
+  assert.equal(ruleCheck('Merge the docs typo fix with one approval.', [prs]).verdict, 'clear');
+});
+
+test('Korean particles after a Latin product name still match', () => {
+  assert.equal(mentionedTechs('Kafka를 도입합니다')[0].name, 'Kafka');
+  assert.equal(ruleCheck('결제 이벤트를 Kafka로 발행합니다.', [sqs]).verdict, 'conflict');
+});
+
+test('language rules only apply to the part of the system they name', () => {
+  const fw = { id: 'fw', title: 'Firmware in Rust', decision: 'New firmware modules are written in Rust; no new C code in the firmware repo.', alternativesRejected: [], chosen: ['Rust'], status: 'accepted' };
+  assert.equal(ruleCheck('Write the BLE pairing firmware module in C.', [fw]).verdict, 'conflict');
+  assert.equal(ruleCheck('Create the new alerts backend service in Kotlin.', [fw]).verdict, 'clear');
+});
+
+test('scoped exceptions and superseded decisions are respected', () => {
+  const cert = { id: 'c', title: 'Certs', decision: 'Device certificates must be rotated every 90 days; long-lived certificates are not allowed.', exceptions: 'Devices on the lab bench network are exempt.', alternativesRejected: [], status: 'accepted' };
+  assert.equal(ruleCheck('Issue 5-year certificates for gateways.', [cert]).verdict, 'conflict');
+  assert.equal(ruleCheck('Issue 2-year certificates for devices on the lab bench network.', [cert]).verdict, 'clear');
+  assert.equal(ruleCheck('Set up RabbitMQ for the webhook workers.', [{ ...sqs, status: 'superseded' }]).verdict, 'clear');
+});

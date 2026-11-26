@@ -72,7 +72,10 @@ const STOP = new Set(
 
 /** Split text into lowercase keyword tokens (letters/numbers, length >= 2). */
 export function tokens(text = '') {
-  return (normalise(text).match(/[\p{L}\p{N}]{2,}/gu) || []).filter((t) => !STOP.has(t));
+  return (normalise(text).match(/[\p{L}\p{N}]{2,}/gu) || [])
+    // "imgix로" -> "imgix": a Korean particle glued to a Latin word.
+    .map((t) => t.replace(/^([a-z0-9]+)[가-힣]{1,3}$/, '$1'))
+    .filter((t) => !STOP.has(t));
 }
 
 /**

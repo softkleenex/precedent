@@ -1,75 +1,19 @@
 {
  "summary": {
   "precision": 1,
-  "recall": 0.814,
-  "f1": 0.897,
-  "case_accuracy": 0.884,
-  "tp": 35,
+  "recall": 0.977,
+  "f1": 0.988,
+  "case_accuracy": 0.986,
+  "tp": 42,
   "fp": 0,
-  "fn": 8,
+  "fn": 1,
   "cases": 69
  },
  "misses": [
   {
-   "id": "c11",
-   "expected": [
-    "491523:1"
-   ],
-   "got": [],
-   "quotes": []
-  },
-  {
-   "id": "c19",
-   "expected": [
-    "X07"
-   ],
-   "got": [],
-   "quotes": []
-  },
-  {
    "id": "c39",
    "expected": [
     "491523:1"
-   ],
-   "got": [],
-   "quotes": []
-  },
-  {
-   "id": "c45",
-   "expected": [
-    "X11"
-   ],
-   "got": [],
-   "quotes": []
-  },
-  {
-   "id": "h09",
-   "expected": [
-    "491523:1"
-   ],
-   "got": [],
-   "quotes": []
-  },
-  {
-   "id": "h10",
-   "expected": [
-    "X10"
-   ],
-   "got": [],
-   "quotes": []
-  },
-  {
-   "id": "h11",
-   "expected": [
-    "X01"
-   ],
-   "got": [],
-   "quotes": []
-  },
-  {
-   "id": "h16",
-   "expected": [
-    "X07"
    ],
    "got": [],
    "quotes": []
@@ -79,6 +23,7 @@
   {
    "title": "PostgreSQL as the system of record",
    "decision": "We use PostgreSQL as the single system of record for all ledger and account data.",
+   "body": "We use PostgreSQL as the single system of record for all ledger and account data. We will not introduce MongoDB or any other document database for ledger, transaction or account data.",
    "alternativesRejected": [
     "MongoDB",
     "DynamoDB"
@@ -102,6 +47,7 @@
   {
    "title": "Use SQS for asynchronous jobs, not Kafka",
    "decision": "We use Amazon SQS queues for asynchronous work.",
+   "body": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
    "alternativesRejected": [
     "Kafka"
    ],
@@ -110,7 +56,7 @@
    "date": "2026-03-04",
    "quote": "We use Amazon SQS queues for asynchronous work. Kafka was rejected: running and upgrading a Kafka cluster is more operational load than a six-person team can carry, and we do not need event replay today.",
    "exceptions": "",
-   "revisitWhen": "Revisit if we need ordered event replay across services or exceed 5,000 messages per second. Revisit when",
+   "revisitWhen": "Revisit if we need ordered event replay across services or exceed 5,000 messages per second.",
    "chosen": [
     "SQS"
    ],
@@ -124,6 +70,7 @@
   {
    "title": "Public partner API is REST with OpenAPI",
    "decision": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/).",
+   "body": "The public partner API is REST described by an OpenAPI 3.1 spec, versioned in the URL (/v1/). We decided not to offer GraphQL to partners, because per-field authorization and query cost limits are hard to audit for a regulated payments API. Internal tools may use whatever fits, but anything partners call must be in the OpenAPI spec.",
    "alternativesRejected": [
     "GraphQL"
    ],
@@ -146,9 +93,11 @@
   {
    "title": "Authentication through Auth0 (OIDC)",
    "decision": "All user sign-in goes through Auth0 using OIDC.",
+   "body": "All user sign-in goes through Auth0 using OIDC. We will not store passwords or build our own login, password reset or MFA flows. Rationale: SOC 2 scope is smaller when credentials never touch our database, and Auth0 already provides MFA.",
    "alternativesRejected": [
     "passwords",
-    "our own login"
+    "our own login",
+    "own login"
    ],
    "rationale": "Rationale: SOC 2 scope is smaller when credentials never touch our database, and Auth0 already provides MFA.",
    "status": "accepted",
@@ -169,6 +118,7 @@
   {
    "title": "Frontend server state with TanStack Query",
    "decision": "New frontend code uses TanStack Query for server state.",
+   "body": "New frontend code uses TanStack Query for server state. Redux is superseded and must not be added to new screens; existing Redux slices are migrated when touched.",
    "alternativesRejected": [
     "Redux"
    ],
@@ -191,6 +141,7 @@
   {
    "title": "Every endpoint that moves money must require an Idempotency-Key header",
    "decision": "Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
+   "body": "Every endpoint that moves money must require an Idempotency-Key header, and retries must reuse the same key.",
    "alternativesRejected": [],
    "rationale": "",
    "status": "accepted",
@@ -206,6 +157,7 @@
   {
    "title": "No new microservices until the ledger monolith has full test…",
    "decision": "No new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
+   "body": "No new microservices until the ledger monolith has full test coverage on transfers; new features go into the existing ledger service.",
    "alternativesRejected": [],
    "rationale": "",
    "status": "accepted",

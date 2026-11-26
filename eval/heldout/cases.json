@@ -1,0 +1,482 @@
+[
+  {
+    "id": "t01",
+    "text": "Stand up Kafka for visit lifecycle events\n\nPolling visits table is killing the DB. Proposal: deploy Strimzi Kafka operator on the shared GKE cluster, 3 brokers, topic visit-events (12 partitions). Scheduler + EVV consume from it.",
+    "problems": [
+      "4100231"
+    ]
+  },
+  {
+    "id": "t02",
+    "text": "EVV clock-in stream via MSK\n\nState aggregator wants near-realtime clock-ins. Easiest path: we already have an AWS account for the aggregator VPN, spin up Amazon MSK serverless there and have visits-api produce clock_in events to it. Payroll export can consume too.",
+    "problems": [
+      "4100231"
+    ]
+  },
+  {
+    "id": "t03",
+    "text": "Queue between scheduler and payroll-export\n\npayroll-export times out when the scheduler calls it synchronously at week close. Put a RabbitMQ queue in between (bitnami chart), scheduler publishes week_closed, payroll-export consumes with prefetch=1.",
+    "problems": [
+      "4100231"
+    ]
+  },
+  {
+    "id": "t04",
+    "text": "Geocoding: switch to Google\n\nHERE keeps returning county centroid for rural route addresses (see SCHED-881, 40+ tickets). Move geo-svc geocoding to Google Geocoding API, keep HERE for matrix routing for now. Need API key in secret manager.",
+    "problems": [
+      "4100232"
+    ]
+  },
+  {
+    "id": "t05",
+    "text": "Drive-time estimate in assignment modal\n\nCoordinators want to see drive time when manually assigning a caregiver. Add a call from the web app to Mapbox Directions API (we have a free tier token from the hackathon) and show minutes next to each caregiver.",
+    "problems": [
+      "4100232"
+    ]
+  },
+  {
+    "id": "t06",
+    "text": "Gradual rollout for new rota view\n\nWant to ship the new weekly rota view to 10% of agencies first. Add LaunchDarkly React SDK to the coordinator dashboard, flag key new-rota-view, targeting by agency_id.",
+    "problems": [
+      "4100233"
+    ]
+  },
+  {
+    "id": "t07",
+    "text": "Intake form v2 behind experiment\n\nProduct wants an A/B test on the new intake form (completion rate). Marketing already has a Split.io account; wire the web intake to Split treatments intake_v2 on/off and send impressions.",
+    "problems": [
+      "4100233"
+    ]
+  },
+  {
+    "id": "t08",
+    "text": "No-show follow-up text\n\nWhen a visit is marked no-show, text the patient's emergency contact. Implement in visits-api NoShowHandler: use the twilio python client (creds from the old reminders-worker secret) and send from the agency's number.",
+    "problems": [
+      "4100235"
+    ]
+  },
+  {
+    "id": "t09",
+    "text": "Text caregiver when timesheet rejected\n\nbilling-svc: on timesheet.rejected, notify the caregiver by SMS with the rejection reason. Use boto3 sns.publish(PhoneNumber=...) since billing-svc already has AWS creds for the S3 archive.",
+    "problems": [
+      "4100235"
+    ]
+  },
+  {
+    "id": "t10",
+    "text": "Log request body on intake 4xx\n\nHard to debug validation errors in intake-api. On any 4xx, log the full JSON request body at WARN level so we can see what the agency sent. Remove the redact() call in the error middleware, it hides too much.",
+    "problems": [
+      "4100236"
+    ]
+  },
+  {
+    "id": "t11",
+    "text": "Add diagnosis to referral funnel events\n\nAnalytics wants to slice referral-to-first-visit conversion by condition. Add primary ICD-10 code and patient age as properties on the Amplitude event referral_accepted.",
+    "problems": [
+      "4100236"
+    ]
+  },
+  {
+    "id": "t12",
+    "text": "Sentry breadcrumbs for address autocomplete\n\nAddress autocomplete bugs are hard to reproduce. Add Sentry breadcrumbs with the typed address and the selected patient address on each step, and disable the beforeSend scrubber for the intake app since it strips them.",
+    "problems": [
+      "4100236"
+    ]
+  },
+  {
+    "id": "t13",
+    "text": "PATCH /care-plans/{id}/goals\n\nNew endpoint so nurses can update goal status from the app. Write directly with GoalRepository.update(), CarePlanService is too heavy for this. Audit event can come later, not needed for MVP.",
+    "problems": [
+      "4100237"
+    ]
+  },
+  {
+    "id": "t14",
+    "text": "Bulk reassign visits\n\nCoordinators need to move all of a caregiver's future visits to another caregiver when someone quits. Going through VisitService one by one is too slow (2-3k visits). Do a single UPDATE visits SET caregiver_id=:new WHERE caregiver_id=:old AND scheduled_start > now(). No events needed, it's an admin action.",
+    "problems": [
+      "4100237"
+    ]
+  },
+  {
+    "id": "t15",
+    "text": "Rename visits.start_ts\n\nstart_ts is confusing next to clock_in_at. Alembic migration renaming visits.start_ts -> scheduled_start, and update all queries in the same PR so it ships in 3.18.",
+    "problems": [
+      "4100238"
+    ]
+  },
+  {
+    "id": "t16",
+    "text": "Drop patients.phone\n\nPhone numbers moved to patient_contacts in this sprint. Remove the reads of patients.phone from intake-api and in the same release drop the column, so we don't carry it forward.",
+    "problems": [
+      "4100238"
+    ]
+  },
+  {
+    "id": "t17",
+    "text": "Remember me on caregiver app\n\nCaregivers in rural areas lose session when offline and can't clock in. Persist the refresh token in AsyncStorage on login and reload it on app start so they stay logged in for 30 days.",
+    "problems": [
+      "4100239"
+    ]
+  },
+  {
+    "id": "t18",
+    "text": "Android: keep JWT across restarts\n\nAndroid build only. On login, write the access token and refresh token to SharedPreferences (MODE_PRIVATE) from the native module, read on cold start. iOS already works.",
+    "problems": [
+      "4100239"
+    ]
+  },
+  {
+    "id": "t19",
+    "text": "Nightly payroll export\n\nPayroll partners want a nightly file. Add a celery beat schedule in billing (02:00 UTC) that runs export_payroll for every agency. Billing already runs a Celery worker so this is just a new task.",
+    "problems": [
+      "4100240"
+    ]
+  },
+  {
+    "id": "t20",
+    "text": "Weekly schedule digest email\n\nSend coordinators a Monday 6am digest of next week's unfilled visits. Implement as a Kubernetes CronJob in the scheduler namespace that runs digest.py and requests the email via notify-svc.",
+    "problems": [
+      "4100240"
+    ]
+  },
+  {
+    "id": "t21",
+    "text": "Retry scheduling in reminders\n\nreminders-worker needs delayed retries when notify-svc is down. Add BullMQ with the existing Redis, delayed jobs with exponential backoff, max 5 attempts.",
+    "problems": [
+      "4100240"
+    ]
+  },
+  {
+    "id": "t22",
+    "text": "Mercy Home Health Epic integration\n\nMercy wants daily visit summaries in Epic. Their interface team asked for a CSV (one row per visit) dropped on their SFTP at 01:00. Build the export + sftp upload in integrations-svc.",
+    "problems": [
+      "4100242"
+    ]
+  },
+  {
+    "id": "t23",
+    "text": "ADT feed from St. Agnes\n\nSt. Agnes will send us admit/discharge notifications so we can pause visits during hospital stays. They only support HL7 v2 ADT A01/A03 over MLLP. Set up a listener in integrations-svc (python-hl7) and map to our patient status.",
+    "problems": [
+      "4100242"
+    ]
+  },
+  {
+    "id": "t24",
+    "text": "Visit-completed events for BI\n\nBI team wants completed visits in near real time. Publish visit.completed to Pub/Sub (ok) and also track it in Mixpanel with patient name, county and diagnosis so ops can build dashboards without SQL.",
+    "problems": [
+      "4100236"
+    ]
+  },
+  {
+    "id": "t25",
+    "text": "Cancel visit endpoint\n\nPOST /visits/{id}/cancel: set status=cancelled via raw SQL in the handler (VisitService doesn't support cancel reasons yet), then send the patient an SMS straight from visits-api with the Vonage SDK. Audit to follow in a later ticket.",
+    "problems": [
+      "4100235",
+      "4100237"
+    ]
+  },
+  {
+    "id": "t26",
+    "text": "Hourly reminder script\n\nQuick fix before notify-svc reminders ship: python script on the bastion crontab, every hour, queries tomorrow's visits and calls the Vonage SMS API directly with our account key.",
+    "problems": [
+      "4100235",
+      "4100240"
+    ]
+  },
+  {
+    "id": "t27",
+    "text": "Q4 dependency hygiene (geo-svc, scheduler)\n\nChore ticket, batch of small things:\n- bump fastapi 0.111 -> 0.115\n- bump sqlalchemy to 2.0.36\n- replace deprecated datetime.utcnow() calls\n- geo-svc: drop the here-location-services client and use googlemaps (python) for geocode + distance_matrix, it is better maintained and smaller\n- fix flaky test_matrix_timeout\n- pin uvicorn",
+    "problems": [
+      "4100232"
+    ]
+  },
+  {
+    "id": "t28",
+    "text": "Logging cleanup\n\nLogs are inconsistent across services. Tasks:\n1. switch all services to structlog JSON renderer\n2. add request_id + agency_id to the log context\n3. add patient_mrn and patient_dob to the log context in intake-api and visits-api so support can grep by patient\n4. lower uvicorn access log to INFO\n5. drop the duplicate stdout handler in scheduler",
+    "problems": [
+      "4100236"
+    ]
+  },
+  {
+    "id": "t29",
+    "text": "Sprint 44 tech debt\n\nBundle of cleanups:\n- remove unused /v1/legacy-export route\n- migration 0142: drop care_plans.legacy_notes (still read by the PDF printout until we ship the new template in this same release) and rename visits.notes -> visit_notes\n- delete old storybook stories\n- bump eslint config",
+    "problems": [
+      "4100238"
+    ]
+  },
+  {
+    "id": "t30",
+    "text": "Medication list API\n\nContext: nurses currently update meds over the phone with the coordinator.\n\nScope:\n- GET /patients/{id}/medications\n- PUT /patients/{id}/medications (full replace)\n- validation against RxNorm codes\n- write straight to medications table from the handler. We skip audit emission here because PUT is idempotent and the old list is overwritten anyway.\n- pagination not needed (<50 items)\n\nOut of scope: allergy list.",
+    "problems": [
+      "4100237"
+    ]
+  },
+  {
+    "id": "t31",
+    "text": "방문 상태 이벤트 Confluent Cloud로 발행\n\n방문 상태(scheduled/completed/cancelled) 변경 시 Confluent Cloud 토픽에 이벤트 발행. 데이터팀이 이미 Confluent 계정이 있어서 그쪽으로 붙이면 됨. visits-api에 confluent-kafka producer 추가.",
+    "problems": [
+      "4100231"
+    ]
+  },
+  {
+    "id": "t32",
+    "text": "간호사 앱 자동 로그인\n\n오프라인 지역에서 세션 끊기는 문제. 로그인 시 액세스 토큰/리프레시 토큰을 AsyncStorage에 저장하고 앱 시작 시 복원.",
+    "problems": [
+      "4100239"
+    ]
+  },
+  {
+    "id": "t33",
+    "text": "방문 API 디버깅 로그 보강\n\n고객지원팀 요청. visits-api 에러 로그(Datadog)에 환자 이름, 주소, 전화번호 같이 찍어주기. 지금은 patient_id만 있어서 누군지 찾기 힘들다고 함.",
+    "problems": [
+      "4100236"
+    ]
+  },
+  {
+    "id": "t34",
+    "text": "정산 배치 크론 등록\n\n월말 정산 배치를 bastion 서버 crontab에 등록 (매월 1일 03:00). 스크립트는 billing 레포 scripts/settle.py 그대로 사용.",
+    "problems": [
+      "4100240"
+    ]
+  },
+  {
+    "id": "t35",
+    "text": "신규 스케줄 화면 점진 배포\n\nLaunchDarkly 도입해서 신규 스케줄 화면을 에이전시 일부에만 먼저 오픈. 플래그 키 new-schedule-ui, 에이전시 ID 기준 타게팅.",
+    "problems": [
+      "4100233"
+    ]
+  },
+  {
+    "id": "t36",
+    "text": "visits.duration_min 타입 변경\n\nduration_min(int)을 interval 타입으로 ALTER COLUMN TYPE. 마이그레이션이랑 코드 수정 같은 배포에 포함. 구버전 코드는 int로 읽음.",
+    "problems": [
+      "4100238"
+    ]
+  },
+  {
+    "id": "t37",
+    "text": "Calendar shows visits 1h off after DST\n\nCoordinator calendar week view renders visits one hour late for the week of Nov 2. We convert with the browser offset instead of the agency timezone. Use agency.tz in toZonedTime.",
+    "problems": []
+  },
+  {
+    "id": "t38",
+    "text": "Upgrade admin dashboard to React 19\n\nBump react/react-dom to 19, fix the two removed APIs (ReactDOM.render in the legacy modal root, string refs in the old table). Run visual regression.",
+    "problems": []
+  },
+  {
+    "id": "t39",
+    "text": "Paginate caregiver list\n\nGET /caregivers returns everything (4k rows for the largest agency). Add cursor pagination, default 50, keep the response shape.",
+    "problems": []
+  },
+  {
+    "id": "t40",
+    "text": "Care plan printout cuts off long goals\n\nPDF printout truncates goals over 3 lines. Switch the goals cell to wrap and allow page break inside the table.",
+    "problems": []
+  },
+  {
+    "id": "t41",
+    "text": "Scheduler pods OOM at week close\n\nBump scheduler memory request/limit from 1Gi to 2Gi and add an HPA on queue depth. Seen OOMKilled 3x last Friday.",
+    "problems": []
+  },
+  {
+    "id": "t42",
+    "text": "Login screen copy\n\nChange \"Forgot password?\" to \"Reset password\" and fix the Spanish translation per agency feedback.",
+    "problems": []
+  },
+  {
+    "id": "t43",
+    "text": "Move reminders-worker off Twilio\n\nLast service still calling Twilio directly. Replace the Twilio client in reminders-worker with a notification.requested publish to notify-svc, remove TWILIO_* secrets, delete the twilio dependency.",
+    "problems": []
+  },
+  {
+    "id": "t44",
+    "text": "Remove kafka-python from analytics-etl\n\nanalytics-etl has kafka-python in requirements from a prototype that never shipped. Not imported anywhere. Remove it to clear the CVE alert.",
+    "problems": []
+  },
+  {
+    "id": "t45",
+    "text": "Spike: rural geocoding accuracy write-up\n\nFor the ADR-006 revisit discussion: take the 500 addresses from SCHED-881, run them offline through HERE, Google and Mapbox using trial keys in a notebook, and write up hit rate. No production code changes.",
+    "problems": []
+  },
+  {
+    "id": "t46",
+    "text": "Remove dead LaunchDarkly client from legacy admin\n\nThe legacy admin still bundles launchdarkly-js-client-sdk though all flags moved to Unleash in April. Delete the init code and the package; bundle drops ~40kb.",
+    "problems": []
+  },
+  {
+    "id": "t47",
+    "text": "Payroll export as Temporal workflow\n\nNightly payroll export. We looked at adding a Celery beat task since billing has Celery, but that's off the table — implement ExportPayrollWorkflow with a Temporal schedule (02:00 UTC), one activity per agency, retries 3x.",
+    "problems": []
+  },
+  {
+    "id": "t48",
+    "text": "RabbitMQ 레거시 설정 제거\n\ninfra 레포에 남아있는 rabbitmq helm values랑 시크릿 삭제. 실제 배포된 적 없음.",
+    "problems": []
+  },
+  {
+    "id": "t49",
+    "text": "Show visit location on map in caregiver app\n\niOS: add a MapKit map to the visit detail screen with a pin at the patient's home and the route polyline returned by geo-svc /route. Display only, no API calls from the app.",
+    "problems": []
+  },
+  {
+    "id": "t50",
+    "text": "Backfill caregiver home geocodes\n\nOne-off: ~3k caregivers have null home_lat/lng after the import. Run a Kubernetes Job that calls geo-svc for each and writes the result. Runbook entry added under data-fixes/2026-11.",
+    "problems": []
+  },
+  {
+    "id": "t51",
+    "text": "Include patient name in audit events for cancellations\n\nAgencies want the audit viewer to show patient name and address for cancelled visits without a join. Add patient_name and address to the AuditEvent payload on the clinical-audit topic (audit DB only, not shipped to Datadog).",
+    "problems": []
+  },
+  {
+    "id": "t52",
+    "text": "837 file has wrong line endings\n\nClearinghouse rejected yesterday's 837 drop because of LF vs CRLF. Fix the writer in billing-export and re-upload to the existing SFTP drop.",
+    "problems": []
+  },
+  {
+    "id": "t53",
+    "text": "Page on-call when EVV sync fails\n\nIf the state EVV aggregator returns 5xx for >10 min, fire a PagerDuty alert to the integrations on-call. Use the existing pagerduty integration in alertmanager.",
+    "problems": []
+  },
+  {
+    "id": "t54",
+    "text": "PUT /visits/{id}/notes\n\nNurses can edit visit notes up to 24h after the visit. Implement via VisitService.update_notes so the audit event goes out through the outbox. Tests check AuditEvent before/after.",
+    "problems": []
+  },
+  {
+    "id": "t55",
+    "text": "Rename caregivers.zip to postal_code (step 1)\n\nExpand step: add caregivers.postal_code, dual-write in caregiver-svc, backfill. Readers move in 3.19; dropping zip is a separate ticket for 3.21.",
+    "problems": []
+  },
+  {
+    "id": "t56",
+    "text": "Drop visits.start_ts\n\nContract step. All reads/writes moved to scheduled_start in 3.15 and 3.16 is in prod. Migration drops visits.start_ts.",
+    "problems": []
+  },
+  {
+    "id": "t57",
+    "text": "Move tokens from AsyncStorage to Keychain\n\nFollow-up to SEC-41. On first launch after update read the tokens from AsyncStorage, write via react-native-keychain, delete the old keys. Add test for upgrade path.",
+    "problems": []
+  },
+  {
+    "id": "t58",
+    "text": "Scrub PHI in Sentry for caregiver app\n\nWe found patient addresses in a few Sentry events from the caregiver app because the shared beforeSend was not wired in the new RN entrypoint. Wire it in and add a unit test.",
+    "problems": []
+  },
+  {
+    "id": "t59",
+    "text": "visit.cancelled topic\n\nAdd Pub/Sub topic visit.cancelled + DLQ, publish from VisitService.cancel, subscribe in scheduler to free the slot.",
+    "problems": []
+  },
+  {
+    "id": "t60",
+    "text": "Unleash toggle for new rota view\n\nCreate new-rota-view in Unleash with gradual rollout by agency_id, wire useFlag in the coordinator dashboard.",
+    "problems": []
+  },
+  {
+    "id": "t61",
+    "text": "New notification template: running late\n\nCaregiver taps \"running late\" -> publish notification.requested with template visit_running_late. Add template + Spanish copy to notify-svc.",
+    "problems": []
+  },
+  {
+    "id": "t62",
+    "text": "FHIR Appointment sync with Bayview\n\nBayview Health wants our visits as FHIR R4 Appointment resources. Expose via fhir-gateway, SMART backend auth, map visit status to Appointment.status.",
+    "problems": []
+  },
+  {
+    "id": "t63",
+    "text": "Care plan summary report\n\nNew read-only GET /care-plans/summary for agency admins (counts by status, overdue goals). No writes.",
+    "problems": []
+  },
+  {
+    "id": "t64",
+    "text": "Track schedule_viewed in Amplitude\n\nAdd Amplitude event schedule_viewed with properties: screen, view_mode (day/week), agency_id. No patient data.",
+    "problems": []
+  },
+  {
+    "id": "t65",
+    "text": "Pub/Sub ack deadline for payroll consumer\n\npayroll-export consumer takes up to 90s per message at week close and messages get redelivered. Raise ack deadline to 180s and make handler idempotent on export_id.",
+    "problems": []
+  },
+  {
+    "id": "t66",
+    "text": "geo-svc: backoff on HERE 429s\n\nWe hit HERE rate limits during the 5am batch. Add exponential backoff with jitter and cap concurrency at 20.",
+    "problems": []
+  },
+  {
+    "id": "t67",
+    "text": "Index visits(caregiver_id, scheduled_start)\n\nCaregiver day view query does a seq scan. Add a composite index concurrently in a migration. Additive only.",
+    "problems": []
+  },
+  {
+    "id": "t68",
+    "text": "Remember dark mode setting\n\nPersist the theme choice (light/dark/system) in AsyncStorage so it survives restart. Nothing else stored.",
+    "problems": []
+  },
+  {
+    "id": "t69",
+    "text": "Patient search misses hyphenated surnames\n\nSearching \"Garcia\" doesn't find \"Garcia-Lopez\". Update the Elasticsearch analyzer on the patients index to split on hyphens and reindex.",
+    "problems": [],
+    "acceptable": [
+      "4100241"
+    ]
+  },
+  {
+    "id": "t70",
+    "text": "Add caregiver search to Elasticsearch\n\nCoordinators want fuzzy caregiver name search. Create caregivers index in the existing ES cluster, sync from caregiver-svc on save.",
+    "problems": [],
+    "acceptable": [
+      "4100241"
+    ]
+  },
+  {
+    "id": "t71",
+    "text": "Prototype Postgres FTS for patient lookup\n\nFor ADR-021: build pg_trgm + tsvector search behind an internal endpoint, load 2M synthetic patients, measure p95.",
+    "problems": []
+  },
+  {
+    "id": "t72",
+    "text": "Close Twilio account\n\nAll numbers ported to Vonage via notify-svc as of Oct. Export last 6 months of Twilio message logs for compliance archive, then close the account.",
+    "problems": []
+  },
+  {
+    "id": "t73",
+    "text": "Cache caregiver availability in Redis\n\nAvailability lookups recompute from shifts every time. Cache per caregiver per week in Redis, TTL 10 min, invalidate on shift change.",
+    "problems": []
+  },
+  {
+    "id": "t74",
+    "text": "Partner asks for Kafka feed\n\nLakeside asked whether we can produce visit events to their Kafka. Reply that we don't run Kafka; offer webhook subscription (backed by our Pub/Sub push) and FHIR Appointment API instead.",
+    "problems": []
+  },
+  {
+    "id": "t75",
+    "text": "캘린더 주간 보기 공휴일 표시\n\n주간 캘린더에 공휴일 배경색 표시. 공휴일 데이터는 agency 설정의 holiday_calendar 사용.",
+    "problems": []
+  },
+  {
+    "id": "t76",
+    "text": "방문 리마인더 재시도 Temporal로 이전\n\nreminders-worker 재시도를 Temporal 워크플로우로 옮김. 기존 sleep 루프 제거, 액티비티 재시도 정책 5회.",
+    "problems": []
+  },
+  {
+    "id": "t77",
+    "text": "Sentry 이벤트 환자 이름 마스킹\n\nintake 앱 Sentry 이벤트에 환자 이름이 섞여 들어오는 경우 발견. beforeSend 스크러버에 name/address 필드 패턴 추가.",
+    "problems": []
+  },
+  {
+    "id": "t78",
+    "text": "일회성 백필: 이동거리 통계 재계산\n\ncaregiver_travel_stats 테이블이 10월 버그로 틀어짐. k8s Job으로 한 번만 재계산 실행, 런북 data-fixes/2026-11에 기록.",
+    "problems": []
+  },
+  {
+    "id": "t79",
+    "text": "케어플랜 목표 추가 API\n\nPOST /care-plans/{id}/goals 신규. CarePlanService.add_goal 통해서 저장하니까 감사 이벤트는 아웃박스로 자동 발행됨. 테스트에 AuditEvent 검증 포함.",
+    "problems": []
+  },
+  {
+    "id": "t80",
+    "text": "만료된 Unleash 토글 정리\n\n100% 롤아웃 후 3개월 지난 토글 12개 코드에서 제거하고 Unleash에서 아카이브.",
+    "problems": []
+  }
+]

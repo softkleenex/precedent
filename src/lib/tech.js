@@ -20,10 +20,11 @@ export const CATEGORIES = {
     Kinesis: ['kinesis'],
     'Pub/Sub': ['pub/sub', 'pubsub'],
     NATS: ['nats'],
+    Pulsar: ['pulsar', 'apache pulsar'],
   },
   'api style': {
     REST: ['rest api', 'openapi', 'restful', 'is rest'],
-    GraphQL: ['graphql', 'apollo', 'graph ql'],
+    GraphQL: ['graphql', 'apollo', 'graph ql', 'hasura'],
     gRPC: ['grpc'],
     SOAP: ['soap'],
   },
@@ -34,7 +35,7 @@ export const CATEGORIES = {
     Keycloak: ['keycloak'],
     Okta: ['okta'],
     Clerk: ['clerk'],
-    'own login': ['own login', 'password hash', 'bcrypt', 'login page', 'password reset ourselves', 'store passwords', 'build login', '비밀번호 해시', '로그인 기능 직접', '직접 만듭', '직접 구현'],
+    'own login': ['own login', 'argon2', 'username and password', 'password form', 'credentials table', 'password login', 'password hash', 'bcrypt', 'login page', 'password reset ourselves', 'store passwords', 'build login', '비밀번호 해시', '로그인 기능 직접', '직접 만듭', '직접 구현'],
   },
   'frontend state': {
     'TanStack Query': ['tanstack query', 'react query', 'usequery'],
@@ -55,6 +56,7 @@ export const CATEGORIES = {
     SendGrid: ['sendgrid'],
     Mailgun: ['mailgun'],
     Postmark: ['postmark'],
+    Mandrill: ['mandrill', 'mailchimp transactional'],
   },
   ci: {
     'GitHub Actions': ['github actions'],
@@ -66,18 +68,22 @@ export const CATEGORIES = {
     Terraform: ['terraform'],
     CDK: ['aws cdk', 'cdk'],
     Pulumi: ['pulumi'],
-    'manual console changes': ['aws console', 'in the console', 'from the console', 'console now', 'manually in console'],
+    'manual console changes': ['aws console', 'aws ui', 'aws 콘솔', '콘솔에서 직접', 'by hand in the console', 'click-ops', 'clickops', 'in the console', 'from the console', 'console now', 'manually in console'],
   },
   mobile: {
     'React Native': ['react native', 'expo'],
     Flutter: ['flutter', 'dart'],
+    'native apps': ['native ios', 'native android', 'swiftui', 'uikit', 'jetpack compose', 'separate native', 'rebuilt natively', 'built natively'],
   },
   'backend language': {
     Python: ['python', 'fastapi', 'django', 'flask'],
     Go: ['golang', 'in go', 'go service', 'go binary'],
-    'Node.js': ['node.js', 'nodejs', 'express.js'],
+    'Node.js': ['node.js', 'nodejs', 'express.js', 'nestjs', 'fastify', 'deno'],
     Java: ['java', 'spring boot'],
     Rust: ['rust'],
+    Kotlin: ['kotlin', 'ktor'],
+    'C#': ['c#', '.net', 'dotnet'],
+    'C/C++': ['c++', 'cpp', 'in c', 'c code', 'c module', 'c file', 'c로'],
   },
   cache: {
     Redis: ['redis', 'elasticache', 'valkey'],
@@ -88,9 +94,30 @@ export const CATEGORIES = {
     'config flags': ['env var to toggle', 'environment variable flag', 'flag from config', 'enable_'],
     Unleash: ['unleash'],
   },
+  'device messaging': {
+    MQTT: ['mqtt', 'iot core'],
+    WebSocket: ['websocket', 'websockets', 'raw websocket'],
+    CoAP: ['coap'],
+  },
+  'push notifications': {
+    'Firebase Cloud Messaging': ['firebase cloud messaging', 'fcm'],
+    OneSignal: ['onesignal'],
+    'SNS mobile push': ['sns mobile push', 'amazon sns push'],
+    APNs: ['apns'],
+  },
+  'money format': {
+    'integer minor units': ['minor units', 'integer cents', 'in cents', 'bigint cents', '정수 센트'],
+    'floating point': ['floating point', 'floating-point', 'float column', 'float columns', 'floats', 'double precision', 'as a double', 'double column', '부동소수점'],
+    'decimal strings': ['decimal string', 'decimal strings', '소수점 문자열'],
+    'decimal numbers': ['numeric(', 'decimal(', 'in dollars'],
+  },
+  'time storage': {
+    UTC: ['utc', 'timestamptz'],
+    'local time': ['naive datetime', 'timestamp without time zone', 'without timezone', 'without time zone', 'as local time', 'in local time', 'offset column', 'offset columns', 'kst 그대로', "user's own timezone", "user's timezone"],
+  },
   architecture: {
     monolith: ['monolith', 'inside the existing ledger service', 'existing ledger service'],
-    microservice: ['microservice', 'separate service', 'standalone service', 'its own service', 'own deploy pipeline', 'deployed separately'],
+    microservice: ['microservice', 'standalone lambda', 'its own repo', 'own repo', 'separate repo', 'separate deployable', '별도 서비스', '독립 서비스', '독립적으로 배포', 'separate service', 'standalone service', 'its own service', 'own deploy pipeline', 'deployed separately'],
   },
 };
 
@@ -116,7 +143,10 @@ export function mentionedTechs(text = '') {
   const seen = new Map();
   for (const { category, name, alias } of INDEX) {
     const a = alias.trim();
-    const re = new RegExp(`(^|[^\\p{L}\\p{N}_])${escape(a)}(?=$|[^\\p{L}\\p{N}_])`, 'u');
+    // Korean attaches particles to the word ("소수점 문자열로"), so Hangul aliases need no right boundary.
+    // Latin aliases may also be followed by a Korean particle ("Kafka를", "Redux로").
+    const right = /[가-힣]$/.test(a) ? '' : '(?=$|[^\\p{L}\\p{N}_]|[가-힣])';
+    const re = new RegExp(`(^|[^\\p{L}\\p{N}_])${escape(a)}${right}`, 'u');
     const m = re.exec(hay);
     if (m && !seen.has(name)) seen.set(name, { category, name, alias: a, index: m.index });
   }
