@@ -100,7 +100,10 @@ export function parseDecisions(page) {
   }
 
   // Inline "Revisit if/when …" sentences anywhere count too.
-  for (const s of sentences(fullText)) if (/^revisit\b/i.test(s) && !revisit.includes(s)) revisit.push(s);
+  const headings = new Set(bs.filter((b) => b.type === 'h').map((b) => b.text.trim()));
+  for (const s of sentences(fullText)) {
+    if (/^revisit\b/i.test(s) && !headings.has(s.trim()) && !revisit.includes(s)) revisit.push(s);
+  }
 
   // Alternatives section items look like "MongoDB: rejected. …" → take the name before the colon/dash.
   const altNames = alternatives

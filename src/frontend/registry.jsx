@@ -23,6 +23,7 @@ import ForgeReconciler, {
   ProgressBar,
   SectionMessage,
   Select,
+  Spinner,
   Stack,
   Tab,
   TabList,
@@ -129,13 +130,21 @@ function DecisionsTab({ decisions }) {
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return decisions.filter(
+    return (decisions || []).filter(
       (d) =>
         (!status || d.status === status.value) &&
         (!q || [d.title, d.decision, ...(d.alternativesRejected || [])].join(' ').toLowerCase().includes(q))
     );
   }, [decisions, query, status]);
 
+  if (decisions === null) {
+    return (
+      <Inline space="space.100" alignBlock="center">
+        <Spinner size="small" label="Loading decisions" />
+        <Text color="color.text.subtle">Loading decisions…</Text>
+      </Inline>
+    );
+  }
   if (decisions.length === 0) {
     return (
       <EmptyState
@@ -238,6 +247,7 @@ const SAMPLES = [
 
 function TryTab() {
   const [text, setText] = useState(SAMPLES[0]);
+  const [areaKey, setAreaKey] = useState(0);
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -262,12 +272,15 @@ function TryTab() {
       </Text>
       <Inline space="space.100" shouldWrap>
         {SAMPLES.map((s, i) => (
-          <Button key={i} spacing="compact" onClick={() => setText(s)}>
+          <Button key={i} spacing="compact" onClick={() => {
+            setText(s);
+            setAreaKey((k) => k + 1);
+          }}>
             {`Example ${i + 1}`}
           </Button>
         ))}
       </Inline>
-      <TextArea value={text} onChange={(e) => setText(e.target.value)} minimumRows={4} />
+      <TextArea key={areaKey} defaultValue={text} onChange={(e) => setText(e.target.value)} minimumRows={4} />
       <Inline>
         <Button appearance="primary" isDisabled={busy || text.trim().length < 10} onClick={check}>
           {busy ? 'Checking…' : 'Check against decisions'}
@@ -431,7 +444,7 @@ function SettingsTab() {
 /* ---------- Page ---------- */
 
 function App() {
-  const [decisions, setDecisions] = useState([]);
+  const [decisions, setDecisions] = useState(null);
   const [stats, setStats] = useState(null);
   const load = () => {
     invoke('listDecisions').then(setDecisions);
