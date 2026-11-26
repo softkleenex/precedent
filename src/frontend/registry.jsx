@@ -243,6 +243,8 @@ const SAMPLES = [
   'Set up an Amazon MSK cluster and publish payment events to a topic so other teams can subscribe.',
   'Expose an Apollo GraphQL endpoint for partners to query accounts in one round trip.',
   'Add a JSONB metadata column to transactions so partners can send arbitrary fields.',
+  'Retry timed-out payouts automatically with a fresh request id on each attempt.',
+  '대량 송금 API는 이번 스프린트에 멱등성 키 검증 없이 먼저 출시합니다.',
 ];
 
 function TryTab() {
