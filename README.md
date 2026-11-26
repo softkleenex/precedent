@@ -1,6 +1,10 @@
+<p><img src="docs/brand/icon.svg" width="64" height="64" alt="Precedent icon"></p>
+
 # Precedent
 
 **Your team already decided. Precedent makes sure people — and coding agents — remember.**
+
+![Precedent: a quoted ADR-002 decision flagged on a Jira issue](docs/brand/cover.png)
 
 Teams record decisions in Confluence: ADRs, design docs, meeting notes. Then a new Jira issue proposes MongoDB for the ledger the team ruled out in February, or a coding agent happily wires up Kafka the team rejected in March. Nobody notices until review — or production.
 
