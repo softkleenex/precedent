@@ -402,12 +402,11 @@ const KO_EN = {
   공유: 'share', 노출: 'show', 포함: 'include', 비밀번호: 'password', 인증서: 'certificate', 결제: 'payment', 환불: 'refund',
   주문: 'order', 상품: 'product', 재고: 'inventory', 이벤트: 'event', 알림: 'notification', 메일: 'email', 문자: 'sms', 테스트: 'test',
   모더레이션: 'moderation', 검수: 'moderation', 플래그: 'flag', 기능: 'feature', 마이그레이션: 'migration', 컬럼: 'column',
-  변경: 'change', 계산식: 'formula', 공식: 'formula', 플래그: 'flag', 토글: 'toggle', 원본: 'original', 파일: 'file', 서빙: 'serve', 영상: 'video', 강의: 'lecture', 자막: 'caption', 엑셀: 'excel', 스프레드시트: 'spreadsheet',
-  학생: 'student', 출석: 'attendance', 이메일: 'email', 학번: 'student number', 전화번호: 'phone', 주소: 'address',
-  대시보드: 'dashboard', 인터랙티브: 'interactive', 쿼리: 'query', 타임아웃: 'timeout', 데이터: 'data', 해지: 'cancellation', 보관: 'retention',
+  변경: 'change', 계산식: 'formula', 공식: 'formula', 토글: 'toggle', 원본: 'original', 파일: 'file', 서빙: 'serve', 영상: 'video', 강의: 'lecture', 자막: 'caption', 엑셀: 'excel', 스프레드시트: 'spreadsheet',
+  학생: 'student', 출석: 'attendance', 학번: 'student number',   대시보드: 'dashboard', 인터랙티브: 'interactive', 쿼리: 'query', 타임아웃: 'timeout', 데이터: 'data', 해지: 'cancellation', 보관: 'retention',
   접속: 'access', 조건: 'predicate', 스냅샷: 'snapshot', 백업: 'backup', 커넥터: 'connector', 테넌트: 'tenant', 부하: 'load', 보안: 'security',
   플레이어: 'player', 메시지: 'message', 원문: 'raw', 섀도: 'shadow', 모드: 'mode', 레이트: 'rate', 리밋: 'limit', 확률: 'rate',
-  영수증: 'receipt', 검증: 'validation', 크래시: 'crash', 덤프: 'dump', 실명: 'name', 공지: 'notice', 엔드포인트: 'endpoint', 매치: 'match', 랭킹: 'leaderboard', 채팅: 'chat', 아이템: 'item', 치트: 'cheat', 학생: 'student', 성적: 'grade',
+  영수증: 'receipt', 검증: 'validation', 크래시: 'crash', 덤프: 'dump', 실명: 'name', 공지: 'notice', 엔드포인트: 'endpoint', 매치: 'match', 랭킹: 'leaderboard', 채팅: 'chat', 아이템: 'item', 치트: 'cheat', 성적: 'grade',
 };
 function gloss(words) {
   const out = [];
