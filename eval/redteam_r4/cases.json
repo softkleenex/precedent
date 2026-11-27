@@ -1,0 +1,537 @@
+[
+ {
+  "id": "v01",
+  "text": "Move dashboard aggregation layer to Apache Druid\n\nTile p95 is ~2.4s on the largest tenants. Druid's ingestion-time rollups look like a better fit for time-series tiles. Plan: stand up a Druid cluster, dual-write rollups, cut dashboards over by EOQ.",
+  "problems": [
+   "30031001"
+  ]
+ },
+ {
+  "id": "v02",
+  "text": "Serve live dashboard tiles from our own Snowflake account\n\nInstead of tuning our clusters, run tile queries against a Snowflake account we own and let it autoscale. Prototype with 3 design-partner tenants, then expand.",
+  "problems": [
+   "30031001"
+  ]
+ },
+ {
+  "id": "v03",
+  "text": "Generate annual-plan invoices in-house\n\nFinance wants custom PO numbers and line ordering on enterprise invoices. Build our own invoice PDF + numbering service and stop using Stripe invoices for annual plans.",
+  "problems": [
+   "30031002"
+  ]
+ },
+ {
+  "id": "v04",
+  "text": "Usage-based billing: move metering to Chargebee\n\nChargebee's metered billing handles our overage tiers natively. Migrate usage plans there; keep Stripe for seat plans.",
+  "problems": [
+   "30031002"
+  ]
+ },
+ {
+  "id": "v05",
+  "text": "Run connector syncs as Airflow DAGs\n\nData team already knows Airflow. Generate one DAG per connector instance and retire the current workflow setup for syncs.",
+  "problems": [
+   "30031003"
+  ]
+ },
+ {
+  "id": "v06",
+  "text": "HubSpot 커넥터 백필을 Step Functions로 분리\n\n대용량 백필이 워커 큐를 막고 있음. HubSpot 백필만 AWS Step Functions 상태머신으로 돌리고, 증분 sync는 그대로 둔다.",
+  "problems": [
+   "30031003"
+  ]
+ },
+ {
+  "id": "v07",
+  "text": "Implement SAML SP in auth-service for Acme rollout\n\nAcme needs IdP-initiated SAML with custom attribute mapping. Implement the ACS endpoint with python3-saml in auth-service instead of waiting on vendor support.",
+  "problems": [
+   "30031004"
+  ]
+ },
+ {
+  "id": "v08",
+  "text": "Add Auth0 tenant for SCIM provisioning\n\nEnterprise customers want SCIM user provisioning. Auth0 has a SCIM add-on; spin up a tenant and route SCIM through it.",
+  "problems": [
+   "30031004"
+  ]
+ },
+ {
+  "id": "v09",
+  "text": "Customer health report across all tenants\n\nCS wants a weekly report (rows ingested, dashboards viewed) for every customer. Add a cron job that opens a clickhouse_connect connection to prod-shared and runs aggregate SQL with no tenant filter.",
+  "problems": [
+   "30031007"
+  ]
+ },
+ {
+  "id": "v10",
+  "text": "Speed up 'how you compare' benchmark widget\n\nWidget shows a tenant's metric percentile vs peers.\n- cache peer percentiles nightly\n- nightly job uses a plain clickhouse_connect client on prod-shared (TenantScopedClient can't do all-tenant queries)\n- render percentile badge in tile header\n- add tooltip copy",
+  "problems": [
+   "30031007"
+  ]
+ },
+ {
+  "id": "v11",
+  "text": "관리자 콘솔 전체 테넌트 대시보드 검색\n\n운영팀이 고객 대시보드를 찾을 수 있게 관리자 콘솔에 검색 추가. 공유 클러스터에 직접 SQL로 붙어 tenant_id 조건 없이 title LIKE 검색.",
+  "problems": [
+   "30031007"
+  ]
+ },
+ {
+  "id": "v12",
+  "text": "Keep churned workspaces for 12 months (win-back)\n\nSales wants to offer churned customers one-click restore. Soft-delete workspaces on cancellation and keep warehouse tables and dashboards for 12 months before purge.",
+  "problems": [
+   "30031008"
+  ]
+ },
+ {
+  "id": "v13",
+  "text": "Lifecycle rule for tenant-exports bucket\n\ntenant-exports (full CSV/Parquet dumps of customer datasets, incl. cancelled accounts) keeps growing. Add S3 lifecycle: Glacier at 30d, expire at 180d.",
+  "problems": [
+   "30031008"
+  ]
+ },
+ {
+  "id": "v14",
+  "text": "해지 고객 데이터 스냅샷 1년 보관\n\n해지 후 분쟁 대응용으로 고객 데이터셋 스냅샷을 1년간 보관해 달라는 법무 요청. 백업 보존 설정 변경.",
+  "problems": [
+   "30031008"
+  ]
+ },
+ {
+  "id": "v15",
+  "text": "Promote Salesforce connector to GA\n\nBeta feedback is good. Flip the GA flag Friday. Load test against the 10x fixture can follow next sprint; AppSec review is booked for January.",
+  "problems": [
+   "30031009"
+  ]
+ },
+ {
+  "id": "v16",
+  "text": "Q4 connector release train\n\nIncluded:\n- Shopify: pagination fix\n- NetSuite: beta -> GA (no load test yet, current tenants are small)\n- Docs: refresh setup screenshots\n- Bump SDK to 3.2",
+  "problems": [
+   "30031009"
+  ]
+ },
+ {
+  "id": "v17",
+  "text": "Zendesk 커넥터 GA 전환\n\n베타 고객 3곳에서 이슈 없음. 다음 주 GA 공개. 보안 리뷰는 GA 이후 진행 예정.",
+  "problems": [
+   "30031009"
+  ]
+ },
+ {
+  "id": "v18",
+  "text": "Persist BigQuery service account keys in connectors table\n\nVault lookups add 80ms to every sync start. Store the SA JSON encrypted with the app KMS key in connectors.credentials and read it directly.",
+  "problems": [
+   "30031010"
+  ]
+ },
+ {
+  "id": "v19",
+  "text": "OAuth refresh token Redis 캐싱\n\nVault 호출이 많아 레이트리밋에 걸림. 커넥터 OAuth refresh token을 Redis에 1시간 TTL로 캐시해서 호출 수를 줄이자.",
+  "problems": [
+   "30031010"
+  ]
+ },
+ {
+  "id": "v20",
+  "text": "Debug dump for failed syncs\n\nWhen a sync fails, write the full resolved connector config (host, user, password/token) into the sync_failures table so support can reproduce without asking the customer.",
+  "problems": [
+   "30031010"
+  ]
+ },
+ {
+  "id": "v21",
+  "text": "Cross-region DR replica for EU tenants\n\nAdd async replication of the eu-west-1 ClickHouse cluster to us-east-1 so we can fail EU tenants over if Ireland goes down.",
+  "problems": [
+   "30031011"
+  ]
+ },
+ {
+  "id": "v22",
+  "text": "Centralize query logs in us-east-1 Loki\n\nShip query logs from all regions (incl. eu-west-1: SQL text and result samples) to the central Loki in us-east-1 for a single search UI.",
+  "problems": [
+   "30031011"
+  ]
+ },
+ {
+  "id": "v23",
+  "text": "EU 테넌트 대시보드 썸네일을 us-east-1 렌더러로 처리\n\n썸네일 렌더러가 us-east-1에만 있음. EU 테넌트 차트 데이터도 미국 렌더러로 보내 이미지 생성.",
+  "problems": [
+   "30031011"
+  ]
+ },
+ {
+  "id": "v24",
+  "text": "Raise Pro plan price for existing customers on Dec 1\n\nPro goes $79 -> $99 for all subscriptions at next renewal starting Dec 1. Update Stripe prices and send the announcement email this week.",
+  "problems": [
+   "30031012"
+  ]
+ },
+ {
+  "id": "v25",
+  "text": "기존 Team 플랜 좌석 단가 인상\n\n다음 결제 주기부터 좌석당 $12 -> $15. 프라이싱 PM 승인 완료, 내일 배포.",
+  "problems": [
+   "30031012"
+  ]
+ },
+ {
+  "id": "v26",
+  "text": "Raise dashboard query timeout to 180s for enterprise\n\nEnterprise tenants with 5B+ rows hit the timeout on ad-hoc tiles. Bump the interactive query timeout to 180s for the enterprise tier.",
+  "problems": [
+   "30031013"
+  ]
+ },
+ {
+  "id": "v27",
+  "text": "대시보드 쿼리 타임아웃 120초로 상향\n\n대형 테넌트에서 타임아웃 에러가 잦음. 대시보드 인터랙티브 쿼리 타임아웃을 120초로 올린다.",
+  "problems": [
+   "30031013"
+  ]
+ },
+ {
+  "id": "v28",
+  "text": "Give support read-only psql to prod metadata DB\n\nSupport waits hours for eng to look up workspace settings. Create a read-only role and grant the support team standing psql access to prod-meta.",
+  "problems": [
+   "30031014"
+  ]
+ },
+ {
+  "id": "v29",
+  "text": "Fix stuck billing sync for tenant 4821\n\n1. ssh to bastion, psql into prod-meta and set subscriptions.status='active' for the tenant\n2. re-send the Stripe webhook\n3. add alert for stuck syncs",
+  "problems": [
+   "30031014"
+  ]
+ },
+ {
+  "id": "v30",
+  "text": "운영 DB 직접 접속해서 대시보드 소유자 변경\n\n고객 요청으로 owner 변경 필요. 운영 메타 DB에 직접 접속해 owner_id 업데이트. 간단 작업이라 티켓은 생략.",
+  "problems": [
+   "30031014"
+  ]
+ },
+ {
+  "id": "v31",
+  "text": "Run EU connector syncs from the US Airflow cluster\n\nTo consolidate infra, schedule EU tenants' connector syncs on the us-east-1 Airflow cluster, staging EU source data in us-east-1 before loading to eu-west-1.",
+  "problems": [
+   "30031011",
+   "30031003"
+  ]
+ },
+ {
+  "id": "v32",
+  "text": "Vault upgrade: stage connector secrets in prod DB\n\nFor the Vault 1.17 upgrade, copy all connector credentials into a temp table in prod-meta through a direct psql session, then re-import after upgrade.",
+  "problems": [
+   "30031010",
+   "30031014"
+  ]
+ },
+ {
+  "id": "v33",
+  "text": "Churn model training data\n\nPull raw events for all tenants straight from prod-shared (no tenant scoping) and keep cancelled accounts' events indefinitely as training data.",
+  "problems": [
+   "30031007",
+   "30031008"
+  ]
+ },
+ {
+  "id": "v34",
+  "text": "자체 청구 시스템 전환 + 기존 고객 가격 인상\n\nStripe를 걷어내고 자체 청구 모듈로 이관. 이관 시점에 기존 고객 가격도 10% 인상 반영.",
+  "problems": [
+   "30031002",
+   "30031012"
+  ]
+ },
+ {
+  "id": "v35",
+  "text": "Ad-hoc explorer on Druid with 5-minute timeout\n\nNew ad-hoc explorer inside dashboards runs on a Druid cluster; interactive queries allowed up to 5 minutes.",
+  "problems": [
+   "30031001",
+   "30031013"
+  ]
+ },
+ {
+  "id": "v36",
+  "text": "엔터프라이즈 SAML 직접 구현\n\nWorkOS 비용 절감을 위해 SAML 연동을 auth 서비스에 python3-saml로 직접 구현.",
+  "problems": [
+   "30031004"
+  ]
+ },
+ {
+  "id": "v37",
+  "text": "Retain deactivated tenant datasets in cold storage\n\nOn contract end, move tenant datasets to Glacier instead of deleting so reactivation is instant. Purge only on explicit customer request.",
+  "problems": [
+   "30031008"
+  ]
+ },
+ {
+  "id": "v38",
+  "text": "Stripe connector: run from a k8s CronJob\n\nTemporal is overkill for the Stripe source connector. Run its sync from a Kubernetes CronJob every 15 minutes.",
+  "problems": [
+   "30031003"
+  ]
+ },
+ {
+  "id": "v39",
+  "text": "Remove beta label from Jira connector\n\nMarketing launch Tuesday. Drop the 'beta' badge and enable it for all plans. No load test planned, usage is light.",
+  "problems": [
+   "30031009"
+  ]
+ },
+ {
+  "id": "v40",
+  "text": "실시간 대시보드 타일을 Druid 클러스터로 서빙\n\n시계열 타일 지연 개선을 위해 Druid 클러스터를 구축하고 실시간 타일 쿼리를 그쪽으로 라우팅.",
+  "problems": [
+   "30031001"
+  ]
+ },
+ {
+  "id": "v41",
+  "text": "Add OAuth auth for Snowflake source connector\n\nCustomers want to connect their own Snowflake warehouse via OAuth instead of key-pair auth.",
+  "problems": []
+ },
+ {
+  "id": "v42",
+  "text": "ClickHouse: projection for daily rollup tiles\n\nAdd a projection on events_daily to cut tile scan size for 30-day charts.",
+  "problems": []
+ },
+ {
+  "id": "v43",
+  "text": "Remove leftover Metabase embed code\n\nReports moved off Metabase. Delete iframe helpers, the METABASE_SECRET env var and the metabase service account.",
+  "problems": []
+ },
+ {
+  "id": "v44",
+  "text": "Add Kinesis stream for audit log events\n\nAudit events need their own stream for the SIEM export. Create audit-events stream with 4 shards.",
+  "problems": []
+ },
+ {
+  "id": "v45",
+  "text": "Kafka vs Kinesis 벤치마크 결과 정리\n\n제안 상태인 ADR-024 검토용으로 MSK와 Kinesis 처리량·비용 비교 결과를 문서화.",
+  "problems": []
+ },
+ {
+  "id": "v46",
+  "text": "Stripe: retry handling for invoice.payment_failed\n\nDunning emails fire twice on retries. Make the webhook handler idempotent on event id.",
+  "problems": []
+ },
+ {
+  "id": "v47",
+  "text": "One-pager: Chargebee vs our Stripe setup\n\nSales asked if Chargebee would help with quotes. Write a comparison one-pager. Research only, no implementation.",
+  "problems": []
+ },
+ {
+  "id": "v48",
+  "text": "Exclude invoices from tenant purge job\n\nFinance needs invoice PDFs and billing records kept 7 years. Skip invoices and billing_events tables in the purge job; everything else still purged at 30 days.",
+  "problems": []
+ },
+ {
+  "id": "v49",
+  "text": "해지 테넌트 퍼지 주기 30일 -> 14일로 단축\n\n보안팀 요청. 해지 후 14일 경과 시 데이터 삭제하도록 퍼지 잡 설정 변경.",
+  "problems": []
+ },
+ {
+  "id": "v50",
+  "text": "Purge job: also delete tenant data from ClickHouse backups\n\nPurge currently misses backup snapshots. Add backup cleanup step so terminated tenants are fully gone within 30 days.",
+  "problems": []
+ },
+ {
+  "id": "v51",
+  "text": "Temporal: retry policy for Salesforce sync activities\n\nSet max attempts 8 with exponential backoff on API 429s.",
+  "problems": []
+ },
+ {
+  "id": "v52",
+  "text": "Migrate remaining cron-based HubSpot syncs to Temporal\n\nTwo legacy cron syncs still exist from before ADR-018. Port them to Temporal workflows and delete the CronJobs.",
+  "problems": []
+ },
+ {
+  "id": "v53",
+  "text": "WorkOS: multiple SAML connections per org\n\nSome customers have two IdPs after an acquisition. Allow multiple WorkOS connections per organization.",
+  "problems": []
+ },
+ {
+  "id": "v54",
+  "text": "WorkOS Directory Sync로 SCIM 프로비저닝 지원\n\n엔터프라이즈 고객 요청. WorkOS Directory Sync 이벤트를 받아 사용자/그룹 동기화.",
+  "problems": []
+ },
+ {
+  "id": "v55",
+  "text": "Login page: remember last-used SSO domain\n\nPrefill the SSO domain field from a cookie.",
+  "problems": []
+ },
+ {
+  "id": "v56",
+  "text": "Feature adoption report from anonymized replica\n\nInternal Analytics computes cross-tenant feature adoption nightly on ch-anon with a read-only role.",
+  "problems": []
+ },
+ {
+  "id": "v57",
+  "text": "Funnel query builder: route through TenantScopedClient\n\nNew funnel builder was calling the driver directly in one path. Route it through TenantScopedClient and add a test.",
+  "problems": []
+ },
+ {
+  "id": "v58",
+  "text": "Shopify connector: 10x fixture load test before GA\n\nRun the load test and book AppSec review; GA flip blocked on both.",
+  "problems": []
+ },
+ {
+  "id": "v59",
+  "text": "Zendesk 커넥터 GA 전 보안 리뷰 요청 및 부하 테스트 일정\n\nAppSec 리뷰 요청 등록, 10x 픽스처 부하 테스트 다음 주 진행. 통과 후 GA.",
+  "problems": []
+ },
+ {
+  "id": "v60",
+  "text": "Snowflake connector (beta): map VARIANT columns\n\nBeta users report VARIANT columns dropped. Map to JSON type.",
+  "problems": []
+ },
+ {
+  "id": "v61",
+  "text": "Fetch connector credentials via Vault agent sidecar\n\nReplace direct Vault API calls with the agent sidecar to cut latency.",
+  "problems": []
+ },
+ {
+  "id": "v62",
+  "text": "Mask secrets in connector config debug output\n\nShow only last 4 chars of tokens/passwords in the sync debug panel.",
+  "problems": []
+ },
+ {
+  "id": "v63",
+  "text": "Send EU usage counters to billing (us-east-1)\n\nBilling needs per-tenant rows-ingested and seat counts for EU tenants to invoice. Send aggregated counters only.",
+  "problems": []
+ },
+ {
+  "id": "v64",
+  "text": "Stand up thumbnail renderer in eu-west-1\n\nEU tenants' thumbnails should render in-region. Deploy renderer to eu-west-1 and route by tenant region.",
+  "problems": []
+ },
+ {
+  "id": "v65",
+  "text": "EU 클러스터 ClickHouse 24.8 업그레이드\n\neu-west-1 클러스터 롤링 업그레이드. 다운타임 없음.",
+  "problems": []
+ },
+ {
+  "id": "v66",
+  "text": "New Pro price for new signups only\n\nFrom Jan 1 new signups pay $99. Existing subscriptions stay at $79 (grandfathered).",
+  "problems": []
+ },
+ {
+  "id": "v67",
+  "text": "기존 고객 Pro 플랜 가격 인상 고지 발송\n\nCFO 승인 완료(첨부). 3월 1일 적용을 위해 오늘 고지 메일 발송 (90일 전).",
+  "problems": []
+ },
+ {
+  "id": "v68",
+  "text": "Raise scheduled export timeout to 10 minutes\n\nLarge scheduled exports fail at 5 min. Bump the batch export job timeout to 10 min.",
+  "problems": []
+ },
+ {
+  "id": "v69",
+  "text": "예약 리포트 export 타임아웃 12분으로 조정\n\n대형 고객 예약 리포트 배치 실패. 배치 타임아웃만 12분으로 늘림.",
+  "problems": []
+ },
+ {
+  "id": "v70",
+  "text": "Lower dashboard query timeout to 45s, show partial results\n\nReturn partial results with a banner instead of spinning.",
+  "problems": []
+ },
+ {
+  "id": "v71",
+  "text": "INC-2231: break-glass read on prod-meta\n\nPagerDuty break-glass ticket BG-118 opened; on-call ran a read-only query to confirm the corrupted row. Access auto-revoked.",
+  "problems": []
+ },
+ {
+  "id": "v72",
+  "text": "Admin UI: change workspace owner\n\nAdd owner-change action to admin console so support stops asking eng to edit the DB.",
+  "problems": []
+ },
+ {
+  "id": "v73",
+  "text": "Upgrade dashboard editor to React 19\n\nBump react/react-dom and fix deprecated lifecycle warnings.",
+  "problems": []
+ },
+ {
+  "id": "v74",
+  "text": "Dark mode for dashboard viewer\n\nRespect prefers-color-scheme in viewer and embeds.",
+  "problems": []
+ },
+ {
+  "id": "v75",
+  "text": "대시보드 PDF 내보내기 한글 폰트 깨짐 수정\n\nNoto Sans KR 임베드.",
+  "problems": []
+ },
+ {
+  "id": "v76",
+  "text": "Fix timezone bug in weekly email digest\n\nDigest uses UTC instead of workspace timezone.",
+  "problems": []
+ },
+ {
+  "id": "v77",
+  "text": "CSV upload size limit 500MB\n\nReject larger uploads with a clear error.",
+  "problems": []
+ },
+ {
+  "id": "v78",
+  "text": "Rename 'Workspaces' to 'Projects' in UI copy\n\nCopy-only change, no API rename.",
+  "problems": []
+ },
+ {
+  "id": "v79",
+  "text": "온보딩 체크리스트에 샘플 대시보드 추가\n\n신규 가입자가 바로 볼 수 있는 샘플 대시보드 3종.",
+  "problems": []
+ },
+ {
+  "id": "v80",
+  "text": "Close Druid spike: staying on ClickHouse\n\nSpike concluded; Druid did not beat ClickHouse on our tile benchmarks. Closing ticket, no migration.",
+  "problems": []
+ },
+ {
+  "id": "v81",
+  "text": "Revert PR #4412 (OAuth tokens in Redis)\n\nPR cached refresh tokens in Redis. Revert; Vault stays the only store.",
+  "problems": []
+ },
+ {
+  "id": "v82",
+  "text": "Onboarding wiki: why Temporal over Airflow\n\nSummarize ADR-018 for new hires.",
+  "problems": []
+ },
+ {
+  "id": "v83",
+  "text": "Offer data export before purge on cancellation\n\nOn cancellation, email the admin a download link valid 14 days, then run the standard purge.",
+  "problems": []
+ },
+ {
+  "id": "v84",
+  "text": "SSO 로그인 실패 에러 메시지 개선\n\nIdP 설정 오류 시 원인별 메시지 표시.",
+  "problems": []
+ },
+ {
+  "id": "v85",
+  "text": "Enable Stripe Tax for US sales tax\n\nTurn on Stripe Tax for US customers on annual plans.",
+  "problems": []
+ },
+ {
+  "id": "v86",
+  "text": "Public API: 600 req/min per-tenant rate limit\n\nAdd token bucket in API gateway.",
+  "problems": []
+ },
+ {
+  "id": "v87",
+  "text": "Kinesis: increase shard count for ingest stream\n\nIngest stream throttled at peak; go 32 -> 48 shards.",
+  "problems": []
+ },
+ {
+  "id": "v88",
+  "text": "Druid source connector\n\nLet customers ingest from their own Druid cluster as a data source, same as Snowflake/BigQuery sources.",
+  "problems": []
+ },
+ {
+  "id": "v89",
+  "text": "ClickHouse 쿼리 캐시 히트율 대시보드 추가\n\n내부 Grafana에 캐시 히트율 패널 추가.",
+  "problems": []
+ },
+ {
+  "id": "v90",
+  "text": "Grafana panel for Temporal workflow latency\n\nTrack schedule-to-start latency per task queue.",
+  "problems": []
+ }
+]

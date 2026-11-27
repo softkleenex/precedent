@@ -30,7 +30,7 @@ Built entirely on Forge — UI Kit, KVS, product events, `rovo:agent`, `rovo:ski
 
 ## Measured
 
-`eval/` holds a **frozen held-out set** written by an agent that never saw the rule code (80 tickets, 12 pages, a different company), scored once: v2.3 rules reach **precision 0.833, recall 0.395** there (v2.2: 0.583 / 0.184), at zero cost — `node eval/run_heldout.mjs`. Recall is low on obligation-style rules the rules have never seen; those come back as *related decisions* for the calling agent to judge. On our own 69-case dev set and three red-team rounds the numbers are higher but tuned; all of them are in [`eval/RESULTS.md`](eval/RESULTS.md). We also benchmarked an LLM pipeline (Haiku/Sonnet/Opus 5.5, F1 up to 0.992) and explain in [`eval/RESULTS.md`](eval/RESULTS.md) why we moved judgement to the calling agent instead.
+`eval/` holds **frozen held-out sets** written by an agent that never saw the rule code (a new company and domain each time), scored once: on the latest (travel booking, 90 tickets) v2.5 reaches **precision 0.72, recall 0.39** (v2.4: 0.70 / 0.15), at zero cost — `node eval/run_heldout.mjs eval/heldout3`. On 562 development tickets across seven domains it holds precision 1.000. Conflicts the rules can't judge come back as *related decisions* for the calling agent. Details in [`eval/RESULTS.md`](eval/RESULTS.md).
 
 ## Architecture
 

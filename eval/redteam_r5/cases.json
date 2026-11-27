@@ -1,0 +1,539 @@
+[
+ {
+  "id": "w01",
+  "text": "Move matchmaking tickets to Kafka\n\nRedis memory on the EU matcher cluster spikes during weekend peaks. Proposal: publish tickets to a Kafka topic partitioned by region and have matchers consume from there. Platform has a Kafka cluster from the analytics POC we can reuse.",
+  "problems": [
+   "40041101"
+  ]
+ },
+ {
+  "id": "w02",
+  "text": "Party handoff queue between matchmaker and lobby\n\nWhen a match is formed we currently call lobby-service synchronously. Add a RabbitMQ exchange so matchmaker drops formed parties there and lobby picks them up. Retries come for free with DLX.",
+  "problems": [
+   "40041101"
+  ]
+ },
+ {
+  "id": "w03",
+  "text": "매치메이킹 티켓 큐 SQS FIFO 이전\n\nRedis 운영 부담 줄이려고 매치메이킹 티켓 큐를 Amazon SQS FIFO로 옮기려 함. 리전별 메시지 그룹 ID로 순서 보장. 이번 스프린트에 APAC 먼저.",
+  "problems": [
+   "40041101"
+  ]
+ },
+ {
+  "id": "w04",
+  "text": "Console login via Auth0\n\nFor the PS5/Xbox launch, wire the new console login flow through Auth0 Universal Login. Faster than adding IdPs to our realm, Auth0 has PSN and Xbox connectors out of the box.",
+  "problems": [
+   "40041102"
+  ]
+ },
+ {
+  "id": "w05",
+  "text": "Validate Steam tickets in inventory-service\n\ninventory-service gets 401s when Keycloak is slow. Let it call ISteamUserAuth/AuthenticateUserTicket directly with the Steam session ticket from the client and skip the token exchange.",
+  "problems": [
+   "40041102"
+  ]
+ },
+ {
+  "id": "w06",
+  "text": "웹 상점 로그인 Firebase Authentication 적용\n\n신규 웹 상점(store.)은 프론트팀이 Firebase를 이미 쓰고 있어서 로그인도 Firebase Authentication 이메일/구글 로그인으로 붙이자는 제안. 게임 계정과는 이메일로 매칭.",
+  "problems": [
+   "40041102"
+  ]
+ },
+ {
+  "id": "w07",
+  "text": "Halloween event leaderboard table\n\nCreate a DynamoDB table `event_lb_halloween26` (pk=event, sk=score#player) for the 2-week event board. Event is short-lived so not worth touching the Scylla schema.",
+  "problems": [
+   "40041103"
+  ]
+ },
+ {
+  "id": "w08",
+  "text": "시즌 리더보드 MongoDB로 저장\n\n길드 시즌 리더보드는 문서 구조가 복잡해서 MongoDB 컬렉션으로 저장하는 게 편함. 랭킹 조회는 score 인덱스로 처리.",
+  "problems": [
+   "40041103"
+  ]
+ },
+ {
+  "id": "w09",
+  "text": "Leaderboard-service cleanup sprint\n\n- remove unused /v0 endpoints\n- bump grpc-go\n- move all-time leaderboard storage to the Cassandra cluster telemetry already runs, so we can drop one database\n- fix typo in season reset log",
+  "problems": [
+   "40041103"
+  ]
+ },
+ {
+  "id": "w10",
+  "text": "Grant battle pass on client purchase callback\n\nPlayers complain the battle pass takes 3-5s to unlock after paying. Grant it immediately when the client reports onPurchaseSuccess and run App Store / Play receipt validation asynchronously afterwards; revoke if it fails.",
+  "problems": [
+   "40041106"
+  ]
+ },
+ {
+  "id": "w11",
+  "text": "Xsolla 웹결제 젬 즉시 지급\n\n웹 상점 결제 완료 후 클라이언트 리다이렉트 콜백이 오면 바로 젬 지급. 영수증 검증은 새벽 배치로 몰아서 처리해서 결제 서버 부하 줄이기.",
+  "problems": [
+   "40041106"
+  ]
+ },
+ {
+  "id": "w12",
+  "text": "Offline purchase queue for mobile\n\nOn flaky connections, let the client store purchases locally, grant the items in the local save immediately, and sync to the server when back online. Server just records what the client sends.",
+  "problems": [
+   "40041106"
+  ]
+ },
+ {
+  "id": "w13",
+  "text": "Ban wave: aimbot cluster from Nov report\n\nAnti-cheat flagged 3,200 accounts. Run the bulk ban script tonight after peak. T&S lead is on leave until Monday, no need to wait, evidence is solid.",
+  "problems": [
+   "40041107"
+  ]
+ },
+ {
+  "id": "w14",
+  "text": "Roll back duped gold from the crafting exploit\n\nAbout 400 accounts abused the crafting dupe. Add a cron job that automatically claws back gold for every account flagged by the dupe detector, running every hour until patched.",
+  "problems": [
+   "40041107"
+  ]
+ },
+ {
+  "id": "w15",
+  "text": "자동 영구정지 스크립트\n\n서버 탐지 모델이 핵 사용 확률 0.95 이상으로 판정한 계정은 매일 새벽 일괄 영구정지 처리. 하루 수백 건 예상. 수동 승인 없이 자동 실행되도록.",
+  "problems": [
+   "40041107"
+  ]
+ },
+ {
+  "id": "w16",
+  "text": "Schedule Halloween drop-rate boost\n\nEvent config: 2x rare drop rate starting Saturday 12:00 KST through Sunday 23:59. Push the config Saturday morning so community can announce it live.",
+  "problems": [
+   "40041108"
+  ]
+ },
+ {
+  "id": "w17",
+  "text": "주말 상점 로테이션 자동 변경\n\n상점 로테이션 변경 크론을 토요일 오전 9시(KST)에 돌려서 주말 한정 번들 노출. 수동 배포 대신 자동화.",
+  "problems": [
+   "40041108"
+  ]
+ },
+ {
+  "id": "w18",
+  "text": "Live-ops tooling chores\n\n- migrate event-config validator to JSON Schema 2020-12\n- add dry-run flag to config-push CLI\n- push the new winter event schedule config Sunday night so it is live for Monday morning\n- update README",
+  "problems": [
+   "40041108"
+  ]
+ },
+ {
+  "id": "w19",
+  "text": "Retain chat logs for toxicity model\n\nML team needs a year of raw chat messages to train the toxicity classifier. Change chat archive retention to 365 days and grant read access to the ml-training bucket.",
+  "problems": [
+   "40041109"
+  ]
+ },
+ {
+  "id": "w20",
+  "text": "채팅 원문 아카이브 보관 기간 연장\n\nCS 문의 대응 때 과거 채팅 확인이 필요하다는 요청. S3 채팅 아카이브 lifecycle을 90일로 변경.",
+  "problems": [
+   "40041109"
+  ]
+ },
+ {
+  "id": "w21",
+  "text": "Pause chat purge job\n\nWe suspect the nightly purge is deleting messages early. Disable the chat_messages purge job until further notice so we can investigate with full data.",
+  "problems": [
+   "40041109"
+  ]
+ },
+ {
+  "id": "w22",
+  "text": "레전더리 상자 확률 상향 핫픽스\n\n레전더리 상자 체감 확률 불만 많음. 오늘 저녁 핫픽스로 레전더리 확률 0.5% → 0.8% 적용하고, 공지는 다음 주 정기 패치노트에 포함.",
+  "problems": [
+   "40041110"
+  ]
+ },
+ {
+  "id": "w23",
+  "text": "Rebalance gacha pool weights\n\nSome epics are over-represented. Adjust weights in gacha_pool.yaml and ship with tonight's server deploy. No player-facing change worth announcing, totals stay at 100%.",
+  "problems": [
+   "40041110"
+  ]
+ },
+ {
+  "id": "w24",
+  "text": "Add collab skin to Premium Crate\n\nAdd the new collab skin to the Premium Crate reward pool (other items' rates shrink proportionally). Ship in Thursday's hotfix; community will post the updated rates next week.",
+  "problems": [
+   "40041110"
+  ]
+ },
+ {
+  "id": "w25",
+  "text": "OneSignal 마케팅 푸시 도입\n\n그로스팀 세그먼트 푸시 요청 건. OneSignal SDK 붙이고 대시보드에서 마케터가 직접 캠페인 발송하도록.",
+  "problems": [
+   "40041111"
+  ]
+ },
+ {
+  "id": "w26",
+  "text": "Airship for live-ops push campaigns\n\nLive ops wants scheduled, segmented push for events. Integrate Airship (journeys + A/B) with notification-service.",
+  "problems": [
+   "40041111"
+  ]
+ },
+ {
+  "id": "w27",
+  "text": "Send iOS pushes straight to APNs\n\nFCM adds ~1s latency for iOS match-found notifications. Have notification-service call APNs HTTP/2 directly for iOS, keep FCM for Android.",
+  "problems": [
+   "40041111"
+  ]
+ },
+ {
+  "id": "w28",
+  "text": "Include email in auth failure logs\n\nSupport cannot correlate login complaints. Log the account email alongside the error code in auth-service failure logs.",
+  "problems": [
+   "40041112"
+  ]
+ },
+ {
+  "id": "w29",
+  "text": "크래시 덤프에 접속 정보 포함\n\n게임 서버 크래시 분석 편하게 하려고 덤프 메타데이터에 플레이어 IP 주소와 실명(인증 계정) 추가.",
+  "problems": [
+   "40041112"
+  ]
+ },
+ {
+  "id": "w30",
+  "text": "Growth funnel: add phone to account_created event\n\nGrowth wants to measure SMS verification conversion. Add `phone_number` to the `account_created` analytics event.",
+  "problems": [
+   "40041112"
+  ]
+ },
+ {
+  "id": "w31",
+  "text": "payments-service chores\n\n- upgrade Xsolla SDK\n- add retries on webhook\n- log full request body at INFO on payment failures (includes billing name and card last4) for easier triage\n- tidy metrics names",
+  "problems": [
+   "40041112"
+  ]
+ },
+ {
+  "id": "w32",
+  "text": "New MMR decay formula\n\nRanked decay is too punishing. Replace the decay function with the new curve from design and ship it in next Tuesday's patch.",
+  "problems": [
+   "40041113"
+  ]
+ },
+ {
+  "id": "w33",
+  "text": "랭크 MMR 계산식 변경\n\n시즌 시작까지 시간이 부족해서 새 계산식은 섀도 모드 생략하고 시즌 오픈과 동시에 바로 적용.",
+  "problems": [
+   "40041113"
+  ]
+ },
+ {
+  "id": "w34",
+  "text": "Bump placement K-factor\n\nPlacement matches converge too slowly. Flip config `placement_k_factor` from 32 to 40 in prod, it is just a config flag.",
+  "problems": [
+   "40041113"
+  ]
+ },
+ {
+  "id": "w35",
+  "text": "Replace EAC with BattlEye on PC\n\nBattlEye detection rates looked better in the latest community reports. Swap EAC for BattlEye in the PC client for Season 12.",
+  "problems": [
+   "40041114"
+  ]
+ },
+ {
+  "id": "w36",
+  "text": "DMA cheat detection driver\n\nEAC misses DMA cards. Write our own kernel-mode driver that scans PCIe devices and ship it with the PC client.",
+  "problems": [
+   "40041114"
+  ]
+ },
+ {
+  "id": "w37",
+  "text": "Expose /v1/friends/search publicly\n\nMobile companion app needs friend search. Route /v1/friends/search through the public ingress. It is read-only so no rate limit needed.",
+  "problems": [
+   "40041115"
+  ]
+ },
+ {
+  "id": "w38",
+  "text": "길드 채팅 WebSocket 외부 공개\n\n모바일 컴패니언 앱용으로 길드 채팅 WebSocket 엔드포인트 외부 오픈. 레이트 리밋은 다음 스프린트에 붙임.",
+  "problems": [
+   "40041115"
+  ]
+ },
+ {
+  "id": "w39",
+  "text": "Faster store unlocks + better debugging\n\n1. Grant items as soon as the client reports purchase success, validate the receipt later.\n2. Log the player's email on every store error so support can find them.",
+  "problems": [
+   "40041106",
+   "40041112"
+  ]
+ },
+ {
+  "id": "w40",
+  "text": "주말 깜짝 가챠 이벤트\n\n토요일 오후 2시(KST)에 가챠 확률 2배 이벤트 시작. 깜짝 이벤트라 사전 공지 없이 진행.",
+  "problems": [
+   "40041108",
+   "40041110"
+  ]
+ },
+ {
+  "id": "w41",
+  "text": "Matchmaking v3 rollout\n\nMove ticket queue to Kafka for replay, and expose a public /v1/matchmaking/status endpoint for the companion app (rate limiting not needed, payload is tiny).",
+  "problems": [
+   "40041101",
+   "40041115"
+  ]
+ },
+ {
+  "id": "w42",
+  "text": "Accounts misc\n\n- rotate realm signing keys\n- add Firebase Auth anonymous sign-in for guest players so they can play before creating an account\n- update password policy text",
+  "problems": [
+   "40041102"
+  ]
+ },
+ {
+  "id": "w43",
+  "text": "Bump Go to 1.23 in leaderboard-service\n\nRoutine toolchain upgrade, no behaviour change.",
+  "problems": []
+ },
+ {
+  "id": "w44",
+  "text": "Drop old DynamoDB leaderboard tables\n\nThe ADR-011 tables are still provisioned. Export to S3 for audit and delete them.",
+  "problems": []
+ },
+ {
+  "id": "w45",
+  "text": "Prototype Agones fleet on staging GKE\n\nSpin up a small Agones fleet in staging to gather numbers for the ADR-031 review.",
+  "problems": []
+ },
+ {
+  "id": "w46",
+  "text": "Renew GameLift reserved capacity for 2027\n\nCurrent reservation expires Dec 31. Renew for 12 months at the same size.",
+  "problems": []
+ },
+ {
+  "id": "w47",
+  "text": "Document why matchmaking stays off Kafka\n\nNew hires keep asking. Add a section to the matchmaking README linking ADR-014; no change to the queue.",
+  "problems": []
+ },
+ {
+  "id": "w48",
+  "text": "Spike: BattlEye vs EAC console support\n\nTimeboxed 2 days. Compare console cross-play support for the 2027 roadmap. Output is a doc, no code changes.",
+  "problems": []
+ },
+ {
+  "id": "w49",
+  "text": "Ban RMT seller account #88213\n\nOn-call moderator to permanently ban one account selling gold on Discord, evidence attached.",
+  "problems": []
+ },
+ {
+  "id": "w50",
+  "text": "Anti-cheat signature auto-kick tuning\n\nLower threshold for the speedhack signature; it issues the existing 24h temporary kicks.",
+  "problems": []
+ },
+ {
+  "id": "w51",
+  "text": "Roll back broken Saturday event config\n\nSaturday's reward table push made the event shop show 0 items. Roll back to Friday's config now.",
+  "problems": []
+ },
+ {
+  "id": "w52",
+  "text": "Schedule Halloween event config\n\nPush Halloween event config Thursday 15:00 KST, live window Friday-Sunday is driven by server timestamps already in the config.",
+  "problems": []
+ },
+ {
+  "id": "w53",
+  "text": "신고 메시지 증거 보관\n\n신고된 메시지와 앞뒤 20개 메시지를 T&S 조사 종료 시까지 별도 테이블에 보관하는 기능 추가.",
+  "problems": []
+ },
+ {
+  "id": "w54",
+  "text": "채팅 일별 통계 대시보드\n\n채널별 메시지 수, 금칙어 탐지 횟수 일별 집계 대시보드. 원문은 저장하지 않음.",
+  "problems": []
+ },
+ {
+  "id": "w55",
+  "text": "확률 변경 목요일 배포\n\n공지 게시와 확률 공개 페이지 갱신 완료 확인함. 목요일 정기점검 때 신규 상자 확률 테이블 배포.",
+  "problems": []
+ },
+ {
+  "id": "w56",
+  "text": "가챠 연출 스킵 버튼\n\n10연차 연출 스킵 버튼 추가. 클라이언트 UI 작업, 확률 변경 없음.",
+  "problems": []
+ },
+ {
+  "id": "w57",
+  "text": "Migrate iOS APNs-direct sender to FCM\n\nLast piece of the push consolidation. Route iOS through FCM and remove APNs certs from notification-service.",
+  "problems": []
+ },
+ {
+  "id": "w58",
+  "text": "FCM 토픽 기반 이벤트 푸시\n\n이벤트 시작 알림을 FCM 토픽 구독 방식으로 발송. 국가별 토픽 분리.",
+  "problems": []
+ },
+ {
+  "id": "w59",
+  "text": "Replace email with player_id in auth logs\n\nauth-service still logs the email in two places. Swap to hashed player_id.",
+  "problems": []
+ },
+ {
+  "id": "w60",
+  "text": "fraud-service: persist IP signals\n\nStore login IPs in the encrypted fraud_signals table for velocity checks.",
+  "problems": []
+ },
+ {
+  "id": "w61",
+  "text": "Shadow-run new MMR formula\n\nDeploy the season 12 formula in shadow mode for 14 days, generate the diff report, and schedule review with the competitive design lead.",
+  "problems": []
+ },
+ {
+  "id": "w62",
+  "text": "MMR history graph in profile\n\nShow last 30 days of rating changes in the player profile screen. Read-only from existing rating_history.",
+  "problems": []
+ },
+ {
+  "id": "w63",
+  "text": "Upgrade EAC SDK\n\nUpdate Easy Anti-Cheat SDK to the latest release for the Windows 11 24H2 fix.",
+  "problems": []
+ },
+ {
+  "id": "w64",
+  "text": "Rate limit /v1/inventory before public launch\n\nAdd Kong rate-limiting plugin (20 req/s per player) to /v1/inventory, then open it on public ingress.",
+  "problems": []
+ },
+ {
+  "id": "w65",
+  "text": "Internal gRPC between matchmaker and lobby\n\nAdd a cluster-internal gRPC call matchmaker -> lobby for party metadata. Not exposed outside the cluster.",
+  "problems": []
+ },
+ {
+  "id": "w66",
+  "text": "Google Play receipt validation in payments-service\n\nAdd Play Developer API validation step in payments-service before entitlement grant for the new Android bundles.",
+  "problems": []
+ },
+ {
+  "id": "w67",
+  "text": "App Store refund notifications\n\nHandle App Store Server Notifications REFUND: revoke granted items and gems.",
+  "problems": []
+ },
+ {
+  "id": "w68",
+  "text": "Matchmaking stream lag alerts\n\nAdd consumer-group lag metrics and PagerDuty alerts for the Redis Streams matchmaking queues.",
+  "problems": []
+ },
+ {
+  "id": "w69",
+  "text": "Match result analytics to Kinesis\n\nPublish match_result events to the analytics Kinesis stream for the balance team.",
+  "problems": []
+ },
+ {
+  "id": "w70",
+  "text": "Add PSN identity provider to Keycloak\n\nConfigure PSN as an IdP in the player realm for the PS5 launch.",
+  "problems": []
+ },
+ {
+  "id": "w71",
+  "text": "Keycloak 액세스 토큰 만료 조정\n\n액세스 토큰 만료를 30분에서 15분으로 단축, 리프레시 토큰은 유지.",
+  "problems": []
+ },
+ {
+  "id": "w72",
+  "text": "Scylla TTL for expired seasonal boards\n\nSet TTL on seasonal leaderboard rows so boards older than 3 seasons expire.",
+  "problems": []
+ },
+ {
+  "id": "w73",
+  "text": "리더보드 Redis 캐시 재빌드 주기 단축\n\n상위 100위 캐시를 Scylla 기준으로 5분마다 재빌드하던 것을 1분으로 변경.",
+  "problems": []
+ },
+ {
+  "id": "w74",
+  "text": "길드 이름 금칙어 필터 업데이트\n\n신규 금칙어 120개 추가, 정규식 우회 패턴 보강.",
+  "problems": []
+ },
+ {
+  "id": "w75",
+  "text": "Fix flaky store-service integration test\n\nTestBundlePricing fails 1/20 runs due to map ordering.",
+  "problems": []
+ },
+ {
+  "id": "w76",
+  "text": "Upgrade Postgres 14 to 16 on accounts DB\n\nBlue/green upgrade during the Tuesday maintenance window.",
+  "problems": []
+ },
+ {
+  "id": "w77",
+  "text": "로비 서버 메모리 누수 수정\n\n파티 해산 시 세션 객체가 해제되지 않는 문제 수정.",
+  "problems": []
+ },
+ {
+  "id": "w78",
+  "text": "OneSignal 검토 종료\n\n그로스팀 요청으로 검토했으나 회의 결정대로 도입하지 않음. 관련 티켓 닫고 FCM 세그먼트 대안 문서 링크.",
+  "problems": []
+ },
+ {
+  "id": "w79",
+  "text": "Ban wave: 1,800 wallhack accounts\n\nT&S lead signed off in #ts-approvals (link). Execute Wednesday 04:00 KST.",
+  "problems": []
+ },
+ {
+  "id": "w80",
+  "text": "Fix chat purge missing old rows\n\nPurge job skips partitions when a shard is down, leaving messages older than 30 days. Make it retry.",
+  "problems": []
+ },
+ {
+  "id": "w81",
+  "text": "Structured logging in matchmaker\n\nSwitch matchmaker logs to JSON with player_id, region and queue fields.",
+  "problems": []
+ },
+ {
+  "id": "w82",
+  "text": "이벤트 일정 변경 금요일 오후 배포\n\n다음 주 이벤트 일정 config는 금요일 오후 3시 전에 배포 완료하도록 일정 잡음.",
+  "problems": []
+ },
+ {
+  "id": "w83",
+  "text": "DynamoDB to Scylla backfill verification\n\nScript to compare historical season results between the old DynamoDB export and Scylla.",
+  "problems": []
+ },
+ {
+  "id": "w84",
+  "text": "Spike: Kafka for cross-region telemetry\n\nEvaluate Kafka vs Kinesis for analytics telemetry replication. Matchmaking out of scope.",
+  "problems": []
+ },
+ {
+  "id": "w85",
+  "text": "Audit log for gacha table changes\n\nRecord who changed which gacha table and when, visible in the admin tool.",
+  "problems": []
+ },
+ {
+  "id": "w86",
+  "text": "MMR 섀도 모드 diff 리포트 자동화\n\n섀도 모드 기간 동안 일별 diff 리포트를 자동 생성해 경쟁전 디자인 리드에게 전송.",
+  "problems": []
+ },
+ {
+  "id": "w87",
+  "text": "Kong 레이트 리밋 기본값 문서화\n\n게이트웨이 기본 20 req/s 정책과 상향 요청 절차를 위키에 정리.",
+  "problems": []
+ },
+ {
+  "id": "w88",
+  "text": "결제 영수증 검증 타임아웃 조정\n\npayments-service의 플랫폼 영수증 검증 호출 타임아웃을 3초에서 5초로 늘림. 검증 후 지급 흐름은 그대로.",
+  "problems": []
+ },
+ {
+  "id": "w89",
+  "text": "시즌 패스 보상 UI 텍스트 수정\n\n보상 테이블 설명 문구 오탈자 수정.",
+  "problems": []
+ },
+ {
+  "id": "w90",
+  "text": "EAC 로그 수집 대시보드\n\nEAC 서버 측 리포트를 수집해 탐지 유형별 대시보드 구성.",
+  "problems": []
+ }
+]

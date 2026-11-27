@@ -13,13 +13,13 @@ import { sentences } from './parse.js';
 import { rankDecisions, normalise, tokens } from './text.js';
 import { policyViolation, conceptsIn } from './policy.js';
 
-const RESEARCH = /\b(spike|evaluat\w*|discuss\w*|analysis|analy[sz]e|investigat\w*|research|faq|explain\w* why|document (?:that|why)|document in the (?:runbook|wiki|readme)|runbook note|should we|consider\w*|compare|proposal for discussion)\b|검토|조사|논의/i;
+const RESEARCH = /\b(spike|evaluat\w*|discuss\w*|analysis|analy[sz]e|investigat\w*|research|faq|explain\w* why|document (?:that|why)|one-pager|write-?up|onboarding (?:wiki|doc)|summari[sz]e (?:adr|the adr|the decision)|research only|no implementation|analysis only|\bvs\.?|versus|document in the (?:runbook|wiki|readme)|runbook note|should we|consider\w*|compare|proposal for discussion)\b|검토|조사|논의/i;
 // A sentence that only asks or reports about an option ("partner asked whether we support Kafka").
-const ASKING = /\b(question about|asked (?:whether|if|about)|asks (?:whether|if|about)|wondering (?:whether|if)|do we support)\b|\?\s*$|문의|질문/i;
+const ASKING = /\b(asks? for|asked for|is asking for|question about|asked (?:whether|if|about)|asks (?:whether|if|about)|wondering (?:whether|if)|do we support)\b|\?\s*$|문의|질문/i;
 // A sentence that is itself a spike or discussion, not a feature that merely mentions comparing.
-const RESEARCH_SENTENCE = /^\W*(?:spike|research|investigate|evaluate|analy[sz]e|discuss|consider|compare)\b|\b(?:should we|whether to|whether we|we can discuss|to be discussed)\b|검토|조사|논의/i;
+const RESEARCH_SENTENCE = /^\W*(?:spike|research|investigate|evaluate|analy[sz]e|discuss|consider|compare)\b|\b(?:should we|whether to|whether we|we can discuss|to be discussed|we looked at|we considered|we evaluated)\b|검토|조사|논의/i;
 // Words that make a sentence about removing or avoiding something rather than doing it.
-const AWAY = /\b(not|no|never|without|stop\w*|no longer|remove\w*|removing|delete\w*|deleting|drop\w*|retire\w*|replace\w*|clean(?:ing)? up|get rid of|away from|migrat\w*|finish\w* (?:the )?\w+ (?:migration|move|cutover))\b|제거|정리|중단|폐기|없애|이관|종료|셧다운|에서 .{0,20}(?:로|으로) (?:옮|이전|전환)/i;
+const AWAY = /\b(not|no|never|without|stop\w*|no longer|remove\w*|removing|delete\w*|deleting|drop\w*|retire\w*|replace\w*|clean(?:ing)? up|get rid of|away from|off the table|ruled out|decided against|not an option|revert\w*|roll(?:ing)? back|rollback|undo|mov\w* (?:\S+ ){0,3}off|scrub\w*|mask\w*|redact\w*|migrat\w*|finish\w* (?:the )?\w+ (?:migration|move|cutover))\b|제거|정리|중단|폐기|없애|마스킹|이관|종료|셧다운|에서 .{0,20}(?:로|으로) (?:옮|이전|전환)/i;
 const ADOPT = /\b(use|using|add|adding|set up|spin up|create|build|implement|move|switch|store|send|publish|write|deploy|run|cache|migrate to|replace \w+ with|prototype|expose|offer|bump|change)\b|도입|사용|저장|옮기|발행|추가|구현|바꿉|변경/i;
 
 function escape(s) {
@@ -31,19 +31,22 @@ function negatedOrLeaving(sentence, alias) {
   const s = sentence.toLowerCase();
   const a = escape(alias.toLowerCase());
   const before = new RegExp(
-    `\\b(not|no|never|without|won't|don't|doesn't|does not|avoid|instead of|rather than|off|away from|replace|replacing|retire|retiring|shut down|remove|removing|delete|deleting|drop|clean up|get rid of|migrate (?:away )?from|migrating (?:away )?from|move (?:away )?from|moving (?:away )?from|migrate off|move off|(?:fix|convert|clean up|migrate|rewrite)\\s+(?:the\\s+)?(?:last|remaining|legacy|old|existing))\\b[^.]{0,40}${a}`,
+    `\\b(not|no|never|without|won't|don't|doesn't|does not|avoid|instead of|rather than|off|away from|replace|replacing|retire|retiring|shut down|remove|removing|delete|deleting|drop|clean up|get rid of|revert|reverting|roll back|migrate (?:away )?from|migrating (?:away )?from|move (?:away )?from|moving (?:away )?from|migrate off|move off|(?:fix|convert|clean up|migrate|rewrite)\\s+(?:the\\s+)?(?:last|remaining|legacy|old|existing))\\b[^.]{0,40}${a}`,
     'i'
   );
-  const after = new RegExp(`${a}[^.]{0,30}\\b(is being retired|is retired|deprecated|devtools)\\b`, 'i');
+  const after = new RegExp(`${a}[^.]{0,30}\\b(is being retired|is retired|deprecated|devtools)\\b|${a}\\s+(?:migration|cutover|deprecation|removal|sunset|teardown|decommission\\w*)\\b`, 'i');
   // "the Datadog to Grafana move", "Go and Node.js code samples" for docs.
   const fromTo = new RegExp(`\\bfrom\\s+${a}\\s+(?:to|into|onto)\\b`, 'i');
   const moving = new RegExp(`${a}\\s+(?:to|→|->)\\s+[\\w.+/ -]{1,30}?\\b(move|migration|cutover|switch|transition)\\b`, 'i');
+  // "migrate the iOS APNs sender to FCM", "connect their own Snowflake as a source": leaving it, or integrating with someone else's.
+  const migrateAway = new RegExp(`\\b(?:migrate|move|port|switch|consolidate)\\s+(?:the\\s+)?(?:[\\w-]+\\s+){0,2}${a}[^.]{0,40}\\s(?:to|onto|into)\\s`, 'i');
+  const theirs = new RegExp(`\\b(?:customers?'?s?|their|partners?'?s?|client'?s?)\\s+(?:own\\s+)?(?:[\\w-]+\\s+)?${a}|${a}\\s+(?:source\\s+|destination\\s+)?connector|${a}[^.]{0,20}\\bas a (?:data )?source\\b|connector for ${a}`, 'i');
   const samples = new RegExp(`${a}[^.]{0,25}\\b(code samples?|samples?|snippets?|examples?)\\b`, 'i');
   // Korean "부동소수점 금액 컬럼을 정수 센트 컬럼으로 바꿉니다" (changing it into something else).
   const display = new RegExp(`${a}[^.]{0,40}\\b(for display|display only|only in the (?:web |mobile )?ui)\\b`, 'i');
   const koAfter = new RegExp(`${a}[^.]{0,20}(정리|제거|삭제|폐기|중단|걷어|없애|종료|셧다운|이관)`, 'i');
   const koLeaving = new RegExp(`${a}[^.]{0,30}(?:을|를|은|는|에|에서)\\s[^.]{0,40}(?:으로|로)\\s*(?:바꿉|바꾸|바꿔|전환|이전|이관|교체|옮|다시 작성|재작성|포팅|마이그레이션)`, 'i');
-  return before.test(s) || after.test(s) || moving.test(s) || fromTo.test(s) || samples.test(s) || koLeaving.test(s) || display.test(s) || koAfter.test(s);
+  return before.test(s) || after.test(s) || moving.test(s) || fromTo.test(s) || migrateAway.test(s) || theirs.test(s) || samples.test(s) || koLeaving.test(s) || display.test(s) || koAfter.test(s);
 }
 
 /** Content words of a rejected phrase, for non-technology rejections like "floating point amounts". */
@@ -62,22 +65,46 @@ function phraseStems(phrase) {
 
 // Korean words for non-technology rejections, so "소수점 문자열" matches "Decimal strings".
 const KO_GLOSSARY = { 부동소수점: 'floating point', 소수점: 'decimal', 문자열: 'strings', 실수형: 'float', 수동: 'manual', 콘솔: 'console', 환경변수: 'environment variable', 하드코딩: 'hard-coded', 비밀번호: 'passwords' };
-const glossed = (s) => s.replace(/[가-힣]+/g, (w) => {
+// "our own kernel driver" = "in-house kernel driver"; but "our own Mosquitto" names a product, keep it.
+const glossed = (s0) => s0.replace(/\b(?:in-house|our own|hand-rolled|homegrown|home-grown|self-built|custom-built|self-hosted)\b|자체|직접/gi, (m, at, str) => (/^\s+[A-Z]/.test(str.slice(at + m.length)) ? m : 'inhouse')).replace(/[가-힣]+/g, (w) => {
   const k = Object.keys(KO_GLOSSARY).find((g) => w.startsWith(g));
   return k ? `${KO_GLOSSARY[k]} ${w}` : w;
 });
 
 // Product-like names inside a rejected phrase ("EMQX brokers") are enough on their own.
-const COMMON_ACRONYMS = new Set(['API', 'APIS', 'UI', 'SDK', 'SDKS', 'HTTP', 'JSON', 'SQL', 'AWS', 'CLI', 'PR', 'PRS', 'ID', 'IDS', 'URL', 'CI', 'CD', 'DB', 'OS', 'IP', 'TLS', 'PII', 'UTC']);
+const COMMON_ACRONYMS = new Set(['API', 'APIS', 'UI', 'SDK', 'SDKS', 'HTTP', 'HTTPS', 'JSON', 'SQL', 'AWS', 'GCP', 'CLI', 'PR', 'PRS', 'ID', 'IDS', 'URL', 'CI', 'CD', 'DB', 'OS', 'IP', 'TLS', 'PII', 'PHI', 'UTC', 'SAML', 'SSO', 'OIDC', 'OAUTH', 'JWT', 'REST', 'CSV', 'PDF', 'HTML', 'CSS', 'DNS', 'VPN', 'SMS', 'MFA', 'RBAC', 'ACL', 'KPI', 'SLA', 'ETL', 'GDPR', 'HIPAA', 'CRM', 'ERP', 'SCIM', 'GA', 'MVP', 'QA', 'EU', 'US', 'KST']);
 function productTokens(phrase) {
   return (phrase.match(/[A-Za-z][A-Za-z0-9]*/g) || []).filter(
     (w) => ((/^[A-Z][A-Z0-9]{2,}$/.test(w) && !COMMON_ACRONYMS.has(w.toUpperCase())) || /^[A-Z]?[a-z]+[A-Z][A-Za-z]*$/.test(w))
   );
 }
 
-function phraseHit(phrase, rawSentence) {
+/** "Every connector sync and backfill is orchestrated as a Temporal workflow": a category rule with a narrow
+ * subject only applies to work about that subject (a CS report cron job is not a connector sync). */
+function subjectOverlap(d, workText) {
+  const m = (d.decision || '').match(/^\s*(?:every|each)\s+([^.]*?)\s+(?:is|are|run|runs|uses?|must|goes|go)\b/i) ||
+    (d.decision || '').match(/^\s*(?!we\b|our\b|all\b)([^.]*?)\s+(?:is|are)\s+(?:persisted|stored|written|served|kept|handled|processed|orchestrated|rendered|enqueued|built)\b/i);
+  if (!m) return true;
+  const norm = (t) => (t.length > 4 ? t.replace(/s$/, '') : t);
+  const subj = tokens(m[1]).filter((t) => t.length >= 4).map(norm);
+  if (subj.length < 2) return true;
+  const words = new Set(tokens(workText).map(norm));
+  return subj.some((w) => words.has(w));
+}
+
+/** "WorkOS: multiple SAML connections": the work goes through the option the decision chose. */
+function viaChosen(d, s) {
+  const m = (d.decision || '').match(/\b(?:through|via|using|uses|use|with|by)\s+([A-Z][\w.-]+)/);
+  if (!m) return false;
+  return new RegExp(`\\b${escape(m[1].replace(/[.-]+$/, ''))}\\b`, 'i').test(s) && !/\b(ourselves|in-house|hand-rolled|instead of|replace\w*|directly)\b|직접|자체/i.test(s);
+}
+
+function phraseHit(rawPhrase, rawSentence) {
+  // "Apache Druid" is Druid: umbrella vendor words don't distinguish options.
+  const phrase = glossed(rawPhrase).replace(/\b(?:Apache|Amazon|AWS|Google Cloud|Microsoft|Azure)\s+(?=[A-Z])/g, '');
   const sentence = glossed(rawSentence);
-  for (const p of productTokens(phrase)) {
+  // "PostgreSQL full-text search" is about a use of PostgreSQL: its product name alone is not enough.
+  for (const p of mentionedTechs(phrase).length ? [] : productTokens(phrase)) {
     if (new RegExp(`(^|[^\\p{L}\\p{N}_])${escape(p)}(?=$|[^\\p{L}\\p{N}_]|[가-힣])`, 'iu').test(sentence)) return true;
   }
   const stems = phraseStems(phrase);
@@ -85,6 +112,9 @@ function phraseHit(phrase, rawSentence) {
   // A one-word rejection ("passwords") must match the whole word, not a prefix ("password-reset emails").
   if (stems.length === 1) {
     const word = tokens(phrase).find((t) => t.length >= 4);
+    // A capitalised name ("Split", "Node") must be written that way: "split on hyphens" is not Split.
+    const raw = (phrase.match(/[A-Za-z][\w.]*/g) || []).find((w) => w.toLowerCase().startsWith(word));
+    if (raw && /^[A-Z]/.test(raw)) return new RegExp(`(^|[^\\w])${escape(raw)}(?![a-z])`).test(rawSentence);
     return tokens(sentence).includes(word);
   }
   const words = tokens(sentence).map(stem);
@@ -121,16 +151,21 @@ function exceptionCovers(decision, sentence) {
       const ruleWords = new Set(tokens(decision.decision || '').map(stem));
       const words = new Set(tokens(sentence).map(stem));
       const own = [...new Set(tokens(exc).filter((t) => t.length >= 4 && !EXCEPTION_WORDS.test(t)).map(stem))].filter((w) => !ruleWords.has(w));
-      if (own.length >= 2 && own.every((w) => words.has(w))) return true;
+      if (own.length >= 2 && own.filter((w) => words.has(w)).length >= Math.max(2, Math.ceil(own.length / 2))) return true;
     }
   }
   return false;
 }
 
+function adoptsViaReplace(s, word) {
+  return new RegExp(`\\b(replac\\w*|swap\\w*|switch\\w*|mov\\w*|migrat\\w*)\\b[^.]{0,40}\\b(with|to|for)\\s+(?:the\\s+)?${escape(word)}`, 'i').test(s);
+}
+
 /** The ticket's own summary says it removes the flagged thing or brings it under the chosen option. */
 function aboutRemoving(summary, best, chosen) {
-  // "Replace SES with Postmark" adopts Postmark.
-  if (best.alias && new RegExp(`\\b(replac\\w*|switch\\w*|mov\\w*|migrat\\w*)\\b[^.]{0,40}\\b(with|to)\\s+${escape(best.alias)}`, 'i').test(summary)) return false;
+  // "Replace SES with Postmark", "Swap EAC for BattlEye" adopt the second option.
+  const target = best.alias || (!best.why && typeof best.tech === 'string' ? (productTokens(best.tech)[0] || best.tech.split(/\s+/)[0]) : '');
+  if (target && adoptsViaReplace(summary, target)) return false;
   const named = best.alias || (typeof best.tech === 'string' && best.tech.split(/\s+/).length <= 3 ? best.tech : '');
   const subject = named
     ? new RegExp(escape(named), 'i').test(summary) || productTokens(named).some((p) => new RegExp(escape(p), 'i').test(summary))
@@ -141,7 +176,7 @@ function aboutRemoving(summary, best, chosen) {
 }
 
 // Bump when rule behaviour changes so cached issue checks are recomputed.
-export const RULES_VERSION = 4;
+export const RULES_VERSION = 5;
 
 // What part of the system a decision or a piece of work is about. A firmware language rule says nothing
 // about backend services, and a backend rule says nothing about the docs site.
@@ -191,10 +226,12 @@ export function ruleCheck(workText, decisions) {
     if (exempted(d, workText)) continue;
 
     const rejectedText = (d.alternativesRejected || []).join('; ');
-    const rejectedTechs = new Set(techsIn(rejectedText));
+    // "PostgreSQL full-text search" rejects a use of PostgreSQL, not PostgreSQL itself.
+    const narrowUse = (r) => tokens(r.replace(new RegExp(mentionedTechs(r).map((t) => escape(t.alias)).join('|') || '$^', 'ig'), '')).filter((t) => t.length >= 4).length >= 2;
+    const rejectedTechs = new Set((d.alternativesRejected || []).filter((r) => !narrowUse(r)).flatMap((r) => techsIn(r)));
     const chosen = new Set((d.chosen && d.chosen.length ? d.chosen : techsIn(d.decision)).filter((t) => !rejectedTechs.has(t)));
     const chosenCats = new Set(mentionedTechs(d.decision).filter((t) => chosen.has(t.name)).map((t) => t.category));
-    const nonTechRejected = (d.alternativesRejected || []).filter((r) => techsIn(r).length === 0);
+    const nonTechRejected = (d.alternativesRejected || []).filter((r) => techsIn(r).length === 0 || narrowUse(r));
     // Prohibitions stated in the decision itself ("balances are never cached", "PII must never be written to logs").
     const forbidden = sentences(d.decision.replace(/;/g, '.'))
       .filter((x) => /\b(never|must not|must never|is not|are not)\b/i.test(x) && techsIn(x).length === 0)
@@ -211,7 +248,7 @@ export function ruleCheck(workText, decisions) {
         if (DOMAIN_CATEGORIES.has(t.category) && (rejectedTechs.has(t.name) || chosenCats.has(t.category)) && outOfDomain(`${d.title} ${d.decision}`, s, t.category !== undefined && !rejectedTechs.has(t.name))) continue;
         if (rejectedTechs.has(t.name)) {
           best = best || { relation: 'revisits', s, tech: t.name, alias: t.alias };
-        } else if (chosenCats.has(t.category) && !chosen.has(t.name)) {
+        } else if (chosenCats.has(t.category) && !chosen.has(t.name) && subjectOverlap(d, workText)) {
           best = best || { relation: 'conflicts', s, tech: t.name, alias: t.alias };
         }
       }
@@ -228,7 +265,9 @@ export function ruleCheck(workText, decisions) {
       }
       if (!best) {
         for (const r of nonTechRejected) {
-          if (phraseHit(r, s) && !AWAY.test(s) && !outOfDomain(`${d.title} ${d.decision}`, s)) {
+          const word = r.split(/\s+/).filter((w) => !/^(?:apache|amazon|aws|google|microsoft|azure)$/i.test(w));
+          const pw = productTokens(r)[0] || word[0];
+          if (phraseHit(r, s) && (!AWAY.test(s) || (pw && adoptsViaReplace(s, pw))) && !outOfDomain(`${d.title} ${d.decision}`, s) && !(word.length === 1 && negatedOrLeaving(s, word[0])) && !viaChosen(d, s)) {
             best = { relation: 'revisits', s, tech: r };
             break;
           }
@@ -238,7 +277,7 @@ export function ruleCheck(workText, decisions) {
     }
     if (!best) {
       const v = policyViolation(workText, d);
-      if (v) best = { relation: 'conflicts', s: v.s, tech: v.clause.text, why: v.why };
+      if (v) best = { relation: 'conflicts', s: v.s, tech: v.clause.text, why: v.why, alias: v.alias };
     }
     if (!best) continue;
     if (researchOnly) continue;

@@ -10,7 +10,8 @@ export const CATEGORIES = {
     MongoDB: ['mongodb', 'mongo', 'documentdb', 'document database', 'document db', 'document store', '몽고db'],
     Couchbase: ['couchbase'],
     DynamoDB: ['dynamodb', 'dynamo'],
-    Cassandra: ['cassandra', 'scylla'],
+    Cassandra: ['cassandra', 'apache cassandra'],
+    ScyllaDB: ['scylladb', 'scylla'],
     Firestore: ['firestore'],
   },
   queue: {
@@ -21,6 +22,8 @@ export const CATEGORIES = {
     'Pub/Sub': ['pub/sub', 'pubsub'],
     NATS: ['nats'],
     Pulsar: ['pulsar', 'apache pulsar'],
+    EventBridge: ['eventbridge', 'event bridge'],
+    SNS: ['sns topic', 'sns topics', 'amazon sns', 'aws sns'],
   },
   'api style': {
     REST: ['rest api', 'openapi', 'restful', 'is rest'],
@@ -94,6 +97,46 @@ export const CATEGORIES = {
     'config flags': ['env var to toggle', 'environment variable flag', 'flag from config', 'enable_'],
     Unleash: ['unleash'],
   },
+  'background jobs': {
+    Temporal: ['temporal', 'temporal workflow', 'temporal cloud'],
+    Celery: ['celery', 'celery beat'],
+    BullMQ: ['bullmq', 'bull queue'],
+    Sidekiq: ['sidekiq'],
+    Airflow: ['airflow'],
+    cron: ['crontab', 'cron job', 'cronjob', 'kubernetes cronjob', 'k8s cronjob', '크론탭', '크론'],
+  },
+  search: {
+    Algolia: ['algolia'],
+    Elasticsearch: ['elasticsearch', 'elastic cloud'],
+    OpenSearch: ['opensearch', 'amazon opensearch'],
+    Typesense: ['typesense'],
+    Meilisearch: ['meilisearch'],
+  },
+  payments: {
+    Stripe: ['stripe'],
+    Adyen: ['adyen'],
+    Braintree: ['braintree'],
+    PayPal: ['paypal'],
+    'Toss Payments': ['toss payments', '토스페이먼츠'],
+  },
+  'object storage': {
+    S3: ['s3', 'amazon s3', 's3 bucket'],
+    GCS: ['google cloud storage', 'gcs'],
+    'Azure Blob': ['azure blob'],
+    Cloudinary: ['cloudinary'],
+  },
+  cdn: {
+    CloudFront: ['cloudfront'],
+    Fastly: ['fastly'],
+    Cloudflare: ['cloudflare'],
+    Akamai: ['akamai'],
+  },
+  maps: {
+    HERE: ['here platform', 'here geocoding', 'here api', 'here maps'],
+    'Google Maps': ['google maps', 'google geocoding', 'google places', 'google directions', 'google routes'],
+    Mapbox: ['mapbox'],
+    OSRM: ['osrm', 'nominatim'],
+  },
   'device messaging': {
     MQTT: ['mqtt', 'iot core'],
     WebSocket: ['websocket', 'websockets', 'raw websocket'],
@@ -101,6 +144,7 @@ export const CATEGORIES = {
   },
   'push notifications': {
     'Firebase Cloud Messaging': ['firebase cloud messaging', 'fcm'],
+    Airship: ['airship'],
     OneSignal: ['onesignal'],
     'SNS mobile push': ['sns mobile push', 'amazon sns push'],
     APNs: ['apns'],

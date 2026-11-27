@@ -44,11 +44,19 @@ function firstMatch(re, text) {
 export function rejectedIn(text = '') {
   const found = [];
   const patterns = [
-    /\b(?:will not|won't|do not|don't|does not|decided not to|must not|never|not)\s+(?:introduce|use|offer|adopt|store|build|add|run|allow)\s+([^.;,:]+?)(?=\s+(?:or any|for|to|because|in|on|unless)\b|[.;,:]|$)/gi,
+    /\b(?:will not|won't|do not|don't|does not|decided not to|must not|never|not)\s+(?:introduce|use|offer|adopt|store|build|add|run|allow|implement|host|maintain)\s+([^.;,:]+?)(?=\s+(?:or any|for|to|because|in|on|unless)\b|[.;,:]|$)/gi,
     // "We will not call Firebase Cloud Messaging directly": any verb after a firm "will not".
     /\b(?:will not|won't|decided not to|agreed not to)\s+(?!be\b|have\b|need\b)[a-z]+\s+([^.;,:]+?)(?=\s+(?:or any|for|to|because|in|on|unless|directly|anymore)\b|[.;,:]|$)/gi,
+    // "We are not adopting LaunchDarkly, Split or Optimizely", "We do not build new HL7 v2 interfaces, flat-file exports or SFTP feeds"
+    /\b(?:are not|aren't|is not|not|no longer|will not|won't|do not|don't)\s+(?:adopting|using|building|adding|introducing|running|offering|allowing|integrating|implementing|hosting|maintaining|writing|add|build|use|introduce|integrate|run|offer|allow|adopt|implement|host|maintain|write)\s+((?:[^.;:—]+?,\s*)*[^.;:—]+?\s+or\s+[^.;:—,]+?)(?=\s+(?:for|because|unless|in new|anymore)\b|[.;:—]|$)/gi,
     /\b([A-Z][\w.+/-]*(?:\s+[A-Z][\w.+/-]*)?)\s+(?:was|were|is|are)\s+(?:rejected|superseded|ruled out|deprecated)\b/g,
     /\b(?:rather than|instead of)\s+([^.;,]+)/gi,
+    // "Proctorio is removed by the end of term", "X is being retired"
+    /\b([A-Z][\w.+-]*)\s+(?:is|are|will be)\s+(?:being\s+)?(?:removed|retired|sunset|decommissioned|phased out|deprecated|dropped)\b/g,
+    // Korean: "SendGrid는 6월 말까지 제거하고"
+    /\b([A-Z][\w.+-]*)(?:은|는|을|를)\s*[^.,]{0,20}?(?:제거|폐기|퇴출|중단)/g,
+    // Korean: "OneSignal, Airship은 도입하지 않는다"
+    /([A-Za-z][\w .,/+-]*?)\s*(?:은|는|을|를)?\s*(?:도입하지|사용하지|쓰지|채택하지)\s*않/g,
   ];
   for (const re of patterns) {
     let m;
@@ -59,14 +67,21 @@ export function rejectedIn(text = '') {
     // "a second payment processor such as Adyen or Braintree this year" -> "Adyen or Braintree"
     .map((f) => f.replace(/^.*\bsuch as\s+/i, '').replace(/\s+(?:this|next) (?:year|quarter|month|sprint)\b.*$|\s+for now\b.*$|\s+anymore\b.*$/i, ''))
     .flatMap((f) => f.split(/\s+or\s+|,\s*/))
+    // "dashboard tiles on Apache Druid" -> "Apache Druid"; "on a Snowflake account we operate" -> "Snowflake account"
+    .map((f) => (/\s+on\s+(?:an?\s+)?[A-Z]/.test(f) ? f.replace(/^.*?\s+on\s+(?:an?\s+)?/, '') : f))
+    .map((f) => f.replace(/^(?:on|in|with|or|and)\s+(?:an?\s+)?/i, '').replace(/^(?:ship|build|run|use)\s+/i, '').replace(/\s+(?:we operate|ourselves|ourself)$/i, ''))
     .map((f) => f.replace(/^(?:build|store|use|run|add|offer|introduce|any other)\s+/i, '').trim())
+    .filter((f, i, all) => !/^(?:an?|the|our|we|it)$/i.test(f) && !(!/[A-Z]/.test(f) && all.some((g) => g !== f && /[A-Z]/.test(g) && text.includes(`${f} on`))))
     .filter(Boolean);
 }
 
 /** "no new C code", "not Kafka", "instead of Redux": the option is ruled out, not chosen. */
 function negatedIn(text, alias) {
   const a = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`\\b(no|not|never|without|instead of|rather than|won't|will not|don't|do not)\\s+(?:\\w+\\s+){0,2}${a}`, 'i').test(text);
+  if (new RegExp(`\\b(no|not|never|without|instead of|rather than|won't|will not|don't|do not)\\s+(?:\\w+\\s+){0,2}${a}`, 'i').test(text)) return true;
+  // "never stored anywhere other than Vault: not in Postgres, Redis, logs or files" — every item of the list is ruled out.
+  return new RegExp(`\\b(?:not|never|no)\\s+(?:in|on|to|via|with|into)\\s+[^.;]*?\\b${a}\\b`, 'i').test(text) ||
+    new RegExp(`${a}[^.;]{0,30}(?:은|는|을|를)?\\s*(?:도입하지|사용하지|쓰지)\\s*않`, 'i').test(text);
 }
 
 /**
@@ -125,8 +140,9 @@ export function parseDecisions(page) {
   // Carve-outs only: "Internal tools may …", "… except vendored SDKs". A rule like "X is not allowed" is not an exception.
   const scopeSentences = (text) =>
     sentences(text)
-      .filter((s) => /\b(may|except|unless|exempt|allowed|still|internal|out of scope|does not apply)\b|예외|허용/i.test(s))
-      .filter((s) => !/\b(not allowed|never allowed|may not|must not)\b/i.test(s) || /\b(except|unless)\b/i.test(s))
+      .filter((s) => /\b(may|except|exception|unless|exempt|allowed|still|internal|out of scope|does not apply)\b|예외|허용/i.test(s))
+      // A prohibition ("No other service may integrate …", "X is not allowed") is the rule itself, not a carve-out.
+      .filter((s) => !(/\b(not allowed|never allowed|may not|must not|never)\b/i.test(s) || /^\s*no\b/i.test(s) || /\bno\s+(?:new\s+)?\w+(?:\s+\w+)?\s+may\b/i.test(s) || /허용하지 않|허용되지 않|금지|불가/.test(s)) || /\b(except|unless)\b|예외/i.test(s))
       .map((s) => {
         const m = s.match(/\b(?:except(?: for)?|unless|other than)\b\s*(.+)$/i);
         return m ? `Exception: ${m[1]}` : s;

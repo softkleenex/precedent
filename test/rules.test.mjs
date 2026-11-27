@@ -87,3 +87,35 @@ test('scoped exceptions and superseded decisions are respected', () => {
   assert.equal(ruleCheck('Issue 2-year certificates for devices on the lab bench network.', [cert]).verdict, 'clear');
   assert.equal(ruleCheck('Set up RabbitMQ for the webhook workers.', [{ ...sqs, status: 'superseded' }]).verdict, 'clear');
 });
+
+// v2.5 general mechanisms
+const dec = (id, decision, extra = {}) => ({ id, title: extra.title || id, decision, quote: decision, body: decision, alternativesRejected: [], status: 'accepted', ...extra });
+
+test('numeric limits: retention and timeouts, in either language', () => {
+  const keep = dec('keep', 'No customer data may be kept longer than 30 days after contract termination or account cancellation.');
+  assert.equal(ruleCheck('Keep churned customer workspaces for 12 months after cancellation.', [keep]).verdict, 'conflict');
+  assert.equal(ruleCheck('Purge cancelled customer data after 14 days.', [keep]).verdict, 'clear');
+  const tmo = dec('tmo', '대시보드 인터랙티브 쿼리의 타임아웃은 60초를 초과할 수 없다.');
+  assert.equal(ruleCheck('Raise the interactive dashboard query timeout to 180s.', [tmo]).verdict, 'conflict');
+  assert.equal(ruleCheck('예약 리포트 배치 타임아웃을 12분으로 조정.', [tmo]).verdict, 'clear');
+});
+
+test('definitions on the page widen the rule ("PHI here means name, address, phone")', () => {
+  const phi = dec('phi', 'Protected health information must never be written to application logs, traces or analytics events. PHI here means anything that identifies a patient: name, address, phone, date of birth, MRN.');
+  assert.equal(ruleCheck('Add patient_mrn and patient_dob to the log context.', [phi]).verdict, 'conflict');
+  assert.equal(ruleCheck('Log the opaque patient_id on errors.', [phi]).verdict, 'clear');
+});
+
+test('routing rules: providers must be reached through the named service', () => {
+  const via = dec('via', 'All patient SMS and email are sent through notify-svc. No other service may integrate a provider SDK directly; this includes Twilio, Vonage and AWS SNS.');
+  assert.equal(ruleCheck('billing-svc: use the Twilio client directly to text the caregiver.', [via]).verdict, 'conflict');
+  assert.equal(ruleCheck('Move reminders-worker off Twilio and publish to notify-svc instead.', [via]).verdict, 'clear');
+});
+
+test('freeze windows and skipped prerequisites', () => {
+  const fz = dec('fz', 'No live-event configuration changes go out between Friday 18:00 and Monday 10:00 KST.');
+  assert.equal(ruleCheck('Push the Halloween drop-rate config Saturday morning.', [fz]).verdict, 'conflict');
+  assert.equal(ruleCheck('Push the Halloween event config Thursday 15:00 KST.', [fz]).verdict, 'clear');
+  const ga = dec('ga', 'Before any connector goes GA, it must pass a load test and an AppSec security review.');
+  assert.equal(ruleCheck('Promote the Salesforce connector to GA Friday; the load test can follow next sprint.', [ga]).verdict, 'conflict');
+});

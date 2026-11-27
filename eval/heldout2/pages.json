@@ -1,0 +1,92 @@
+[
+  {
+    "id": "5201101",
+    "title": "ADR-004: OpenSearch for course catalog and content search",
+    "createdAt": "2025-09-18",
+    "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2025-09-18 &middot; <strong>Owners:</strong> Discovery squad</p>\n<h2>Context</h2><p>Students search the course catalog, lecture transcripts and discussion threads. Several partner universities teach in English, Korean and Spanish, and their contracts require that student-generated content stays in our own AWS regions.</p>\n<h2>Decision</h2><p>Catalog, transcript and discussion search runs on Amazon OpenSearch Service, operated by the Discovery squad. We will not use Algolia or Elastic Cloud for any search feature.</p>\n<h2>Alternatives considered</h2><ul><li>Algolia: rejected. Indexed records would leave our regions, which breaks the data residency clauses, and per-record pricing gets expensive with transcripts.</li><li>Elastic Cloud: rejected on licensing and cost; feature parity with OpenSearch was not worth it.</li><li>PostgreSQL full-text search (tsvector): rejected. Relevance for mixed Korean/English text was poor in our tests and it adds load to the primary database.</li></ul>\n<h2>Consequences</h2><p>Indexing goes through the search-indexer service. Exception: back-office lookups by exact identifier (student number, course code) may keep using plain database queries.</p>\n<h2>Revisit when</h2><p>OpenSearch operating cost exceeds 2 FTE-weeks per quarter.</p>"
+  },
+  {
+    "id": "5201102",
+    "title": "ADR-006: Temporal for long-running academic workflows",
+    "createdAt": "2025-10-02",
+    "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2025-10-02 &middot; <strong>Owners:</strong> Platform</p>\n<h2>Context</h2><p>Grade sync to university SIS systems, bulk enrollment and transcript generation run for minutes to hours, call flaky external systems and must survive deploys. Our Celery setup lost in-flight state twice during term start.</p>\n<h2>Decision</h2><p>Long-running and multi-step workflows (SIS grade sync, bulk enrollment, transcript generation, term rollover) are implemented as Temporal workflows. They are not built on Celery, Airflow or AWS Step Functions.</p>\n<h2>Alternatives considered</h2><ul><li>Celery with chords/chains: rejected, no durable workflow state and retries were lost on worker restarts.</li><li>AWS Step Functions: rejected, hard to run locally and ties workflow code to JSON state machines.</li><li>Airflow: rejected, built for batch data pipelines, not per-student workflows.</li></ul>\n<h2>Consequences</h2><p>Short fire-and-forget tasks (under ~30 seconds, e.g. sending one email or push notification) may continue to use the existing RQ workers.</p>"
+  },
+  {
+    "id": "5201103",
+    "title": "ADR-009: Proctorio for remote exam proctoring",
+    "createdAt": "2024-08-12",
+    "storage": "<p><strong>Status:</strong> Superseded by ADR-015 &middot; <strong>Date:</strong> 2024-08-12</p>\n<h2>Context</h2><p>Universities moved midterms online and asked for automated proctoring inside the exam player.</p>\n<h2>Decision</h2><p>We integrate the Proctorio browser extension for remote exam proctoring.</p>\n<h2>Alternatives considered</h2><ul><li>ProctorU: rejected, live proctors are too expensive at our volume.</li></ul>\n<h2>Consequences</h2><p>Students must install a Chrome extension. <em>Superseded in March 2026, see ADR-015.</em></p>"
+  },
+  {
+    "id": "5201104",
+    "title": "ADR-015: Honorlock replaces Proctorio for remote proctoring",
+    "createdAt": "2026-03-09",
+    "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2026-03-09 &middot; <strong>Supersedes:</strong> ADR-009</p>\n<h2>Context</h2><p>Accessibility complaints about the Proctorio extension, two partner universities banning it, and a price increase at renewal.</p>\n<h2>Decision</h2><p>Honorlock is our only remote proctoring provider. Proctorio is removed by the end of the spring 2026 term and its contract is not renewed; no new exams may be configured with it.</p>\n<h2>Alternatives considered</h2><ul><li>ProctorU: rejected again, live proctoring cost per exam.</li><li>Examity: rejected, no LTI 1.3 support at the time.</li><li>Building in-house webcam proctoring: rejected. Face detection and identity checks create biometric-data obligations we do not want to own.</li></ul>\n<h2>Revisit when</h2><p>The Honorlock contract comes up for renewal (March 2028).</p>"
+  },
+  {
+    "id": "5201105",
+    "title": "플랫폼 주간 회의록 2026-05-14",
+    "createdAt": "2026-05-14",
+    "storage": "<p><strong>참석:</strong> 김도윤, 박서연, Alex R., 이하준 &middot; <strong>작성:</strong> 박서연</p>\n<h2>논의</h2><ul><li>지난달 SendGrid 장애 때 .ac.kr / .edu 도메인으로 가는 비밀번호 재설정 메일이 스팸함으로 분류된 건 공유.</li><li>Postmark, Amazon SES, SendGrid 유지 세 가지 비교. SES는 바운스/수신거부 처리를 직접 만들어야 해서 제외, SendGrid는 도달률 문제로 제외.</li><li>학기 초 대량 발송 피크 때 비용은 Postmark가 약간 높지만 감수하기로 함.</li></ul>\n<h2>결정 사항</h2><ul><li><strong>Decision:</strong> 플랫폼에서 나가는 모든 메일(비밀번호 재설정, 과제 알림, 강의 공지 메일 포함)은 Postmark로 발송한다. SendGrid는 6월 말까지 제거하고, SES·Mailgun 등 다른 발송 서비스는 쓰지 않는다.</li></ul>\n<h2>액션 아이템</h2><ul><li>이하준: 템플릿 이전 (6/30)</li><li>Alex: DKIM/SPF 레코드 업데이트</li><li>김도윤: 모바일 퀴즈 타이머 버그 재현 (다음 회의)</li></ul>"
+  },
+  {
+    "id": "5201106",
+    "title": "ADR-011: Unleash (self-hosted) for feature flags",
+    "createdAt": "2025-11-20",
+    "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2025-11-20 &middot; <strong>Owners:</strong> Developer Experience</p>\n<h2>Context</h2><p>We need per-university and per-course targeting for flags across web, mobile and backend. Flag evaluation contexts include course and enrollment identifiers.</p>\n<h2>Decision</h2><p>Feature flags are managed in our self-hosted Unleash instance. Teams do not add LaunchDarkly, Flagsmith or other flag SaaS SDKs.</p>\n<h2>Alternatives considered</h2><ul><li>LaunchDarkly: rejected, MAU-based pricing with ~400k students, and evaluation context would leave our infrastructure.</li><li>Flagsmith (SaaS): rejected for the same data residency reason.</li><li>Homegrown config table: rejected, no gradual rollout or targeting.</li></ul>\n<h2>Consequences</h2><p>DevEx runs Unleash on the shared cluster; each squad owns its flags and removes them after full rollout.</p>"
+  },
+  {
+    "id": "5201107",
+    "title": "Engineering Handbook: Release Standard",
+    "createdAt": "2025-07-01",
+    "storage": "<h2>Purpose</h2><p>Term-time incidents hit hundreds of thousands of students at once, often during exams. We decouple deploys from releases.</p>\n<h2>Standard</h2><p>Every new user-facing feature or behaviour change ships behind a feature flag that is off in production by default, and is rolled out gradually (pilot university first). Features are never released to all tenants in the same deploy that introduces them.</p>\n<h2>Exceptions</h2><ul><li>Copy, typo and translation fixes.</li><li>Security patches.</li><li>Bug fixes that only restore previously documented behaviour.</li></ul>\n<h2>Related</h2><p>Flag tooling: see ADR-011.</p>"
+  },
+  {
+    "id": "5201108",
+    "title": "Academic Integrity Policy: Changes to published grades",
+    "createdAt": "2025-08-25",
+    "storage": "<h2>Scope</h2><p>Applies to every path that can change a grade students can already see: the gradebook UI, the public API, CSV/LTI grade imports, Temporal workflows and one-off scripts.</p>\n<h2>Policy</h2><p>Once a grade has been published to a student, any change to it requires approval by a second person (course coordinator or registrar office) in addition to the person making the change. The request, approver and before/after values are written to the grade audit log. Instructors and TAs cannot change a published grade on their own.</p>\n<h2>Exception</h2><p>An automatic regrade triggered by the exam owner correcting an answer key does not need a second approver <strong>if it only raises scores</strong>. It is still logged and students are notified. Any regrade that lowers a published score follows the normal policy.</p>\n<h2>Owner</h2><p>Registrar liaison + Assessment squad.</p>"
+  },
+  {
+    "id": "5201109",
+    "title": "Data Handling Rule: Student records stay in the platform",
+    "createdAt": "2025-06-10",
+    "storage": "<h2>Background</h2><p>In 2024 a departmental spreadsheet containing names, student numbers and grades was shared publicly by mistake. Our university contracts (and FERPA) treat this as a reportable breach.</p>\n<h2>Rule</h2><p>Student records (anything that identifies a student together with enrollment, grades, attendance, accommodations or conduct data) are never exported to spreadsheets (CSV, Excel, Google Sheets) and never sent as email attachments. Staff who need such data use the Registrar Reporting portal, where access is role-checked and logged.</p>\n<h2>Exception</h2><p>Aggregated, de-identified figures (counts or averages per course/department, with every cell representing at least 10 students) may be exported to CSV.</p>\n<h2>Questions</h2><p>#data-governance</p>"
+  },
+  {
+    "id": "5201110",
+    "title": "영상 업로드 처리 원칙",
+    "createdAt": "2025-12-03",
+    "storage": "<h2>배경</h2><p>교수·학생이 올리는 영상은 코덱, 해상도, 용량이 제각각이고, 원본을 그대로 내보내면 모바일 재생 실패와 대역폭 비용 문제가 생긴다. 2025년 가을에는 악성 파일이 첨부된 업로드도 있었다.</p>\n<h2>원칙</h2><p>플랫폼에 업로드되는 모든 영상(강의 녹화, 과제 제출 영상, 토론 첨부 영상 포함)은 미디어 파이프라인(바이러스 검사 &rarr; HLS 트랜스코딩 &rarr; 자막 생성 작업)을 거친 결과물만 재생에 사용한다. 원본 파일을 S3 presigned URL이나 다운로드 링크로 직접 서빙하지 않는다.</p>\n<h2>예외</h2><ul><li>YouTube, Panopto 등 외부 플랫폼 영상의 임베드는 우리 스토리지에 올라오지 않으므로 이 원칙의 대상이 아니다.</li></ul>\n<h2>담당</h2><p>미디어 스쿼드</p>"
+  },
+  {
+    "id": "5201111",
+    "title": "분석 이벤트 개인정보 규칙",
+    "createdAt": "2026-01-15",
+    "storage": "<h2>배경</h2><p>Amplitude와 Segment로 보내는 이벤트는 외부 사업자에 저장되고, 대학과의 개인정보 처리 위탁 계약 범위에 포함되어 있지 않다.</p>\n<h2>규칙</h2><p>분석 이벤트(Amplitude, Segment, Mixpanel 등 모든 제품 분석 도구)에는 개인을 식별할 수 있는 정보를 넣지 않는다. 이름, 이메일, 학번, 전화번호, IP 주소가 해당된다. 사용자 식별은 HMAC으로 만든 learner_key만 사용한다.</p>\n<h2>예외 및 범위</h2><ul><li>성적 감사 로그, 보안 로그 등 내부 운영 로그는 분석 이벤트가 아니므로 이 규칙의 대상이 아니다 (별도 보존 정책 적용).</li></ul>\n<h2>문의</h2><p>개인정보보호 담당 / #data-governance</p>"
+  },
+  {
+    "id": "5201112",
+    "title": "API Guild sync 2026-02-04",
+    "createdAt": "2026-02-04",
+    "storage": "<p><strong>Attendees:</strong> Priya, Tomás, 최민재, Jordan &middot; <strong>Notes:</strong> Jordan</p>\n<h2>Discussion</h2><ul><li>Scraper hammered /public/catalog during spring registration week; p99 went to 9s for everyone.</li><li>Debated per-tenant vs per-token limits. Kong supports both; start with per-token.</li><li>Tomás raised the OpenAPI lint rule for pagination params, deferred to next sync.</li></ul>\n<h2>Outcomes</h2><ul><li><strong>Decision:</strong> every new endpoint exposed through the public API gateway (Kong) must have a rate-limit policy configured before it goes to production. Internal service-to-service endpoints on the mesh that are not routed through the gateway are out of scope.</li><li>Pagination lint rule: revisit next sync.</li></ul>\n<h2>Action items</h2><ul><li>Priya: add a rate-limit check to the gateway config CI.</li><li>최민재: backfill limits for existing /public routes.</li></ul>"
+  },
+  {
+    "id": "5201113",
+    "title": "ADR-017: LTI 1.3 only for new tool integrations",
+    "createdAt": "2026-10-21",
+    "storage": "<p><strong>Status:</strong> Proposed &middot; <strong>Date:</strong> 2026-10-21 &middot; <strong>Author:</strong> Integrations squad</p>\n<h2>Context</h2><p>LTI 1.1 uses OAuth 1.0a shared secrets, which several university security reviews now flag. 1EdTech has deprecated it.</p>\n<h2>Decision (proposed)</h2><p>New external tool integrations will be built on LTI 1.3 / LTI Advantage only. No new LTI 1.1 integrations; existing ones are migrated by fall 2027.</p>\n<h2>Alternatives considered</h2><ul><li>Keep supporting both indefinitely: doubles test surface.</li></ul>\n<h2>Open questions</h2><p>Some publisher partners only support 1.1 today. Waiting for feedback from the partner team before accepting.</p>"
+  },
+  {
+    "id": "5201114",
+    "title": "Accessibility Standard: captions on lecture video",
+    "createdAt": "2025-05-12",
+    "storage": "<h2>Why</h2><p>Our contracts commit to WCAG 2.1 AA, and partner disability services offices audit us each term.</p>\n<h2>Standard</h2><p>Recorded lecture videos are not published to students until they have captions (machine-generated captions reviewed by the course team or a captioning vendor). A recording without captions stays in draft.</p>\n<h2>Exception</h2><p>Live-streamed sessions may run with live auto-captions only; the recording of a live session must have reviewed captions within 48 hours of the session.</p>\n<h2>Owner</h2><p>Accessibility working group</p>"
+  },
+  {
+    "id": "5201115",
+    "title": "Production Access Rule: no direct writes to student data",
+    "createdAt": "2025-04-08",
+    "storage": "<h2>Rule</h2><p>Nobody writes directly to production databases that hold student records (enrollments, grades, attempts, accommodations) &mdash; no ad-hoc UPDATE/DELETE/INSERT from a SQL client, notebook or support tool. Data fixes go through the admin console or a reviewed migration/backfill job with an audit trail.</p>\n<h2>Exception</h2><p>Break-glass: during a declared incident, with the incident commander's approval recorded in the incident channel, an on-call engineer may run a reviewed statement. It must be logged in the incident timeline.</p>\n<h2>Read access</h2><p>Read-only queries on the replica are allowed for engineers with prod-read role.</p>"
+  }
+]

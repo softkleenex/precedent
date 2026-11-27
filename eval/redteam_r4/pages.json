@@ -1,0 +1,86 @@
+[
+ {
+  "id": "30031001",
+  "title": "ADR-012: ClickHouse as the dashboard query engine",
+  "createdAt": "2026-03-04",
+  "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2026-03-04 &middot; <strong>Owners:</strong> Query Platform</p><h2>Context</h2><p>Dashboard tiles issue thousands of small aggregate queries per minute over tenant event tables. Postgres read replicas hit their limit at ~200M rows per tenant.</p><h2>Decision</h2><p>Interactive dashboard queries are served by our self-managed ClickHouse clusters. We will not run dashboard tiles on Apache Druid or on a Snowflake account we operate.</p><h2>Alternatives considered</h2><ul><li>Apache Druid: rejected; ingestion-time rollups make schema changes painful and the ops footprint (ZooKeeper, historicals, brokers) is too big for our team.</li><li>Snowflake (hosted by us): rejected; per-query credit cost at our tile volume is roughly 6x ClickHouse and cold-start latency breaks the 1s tile budget.</li></ul><h2>Consequences</h2><p>Customers can still connect their own Snowflake or Druid as a <em>source</em> through connectors; this ADR is about where our dashboards execute.</p>"
+ },
+ {
+  "id": "30031002",
+  "title": "ADR-015: Stripe Billing for subscriptions and invoicing",
+  "createdAt": "2026-01-20",
+  "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2026-01-20 &middot; <strong>Owners:</strong> Billing team</p><h2>Context</h2><p>We sell seat-based and usage-based plans, monthly and annual, with enterprise POs.</p><h2>Decision</h2><p>All subscriptions, usage metering and invoices are handled by Stripe Billing. We do not build an in-house invoicing or metering system.</p><h2>Alternatives considered</h2><ul><li>Chargebee: rejected; duplicate customer records with Stripe payments and extra sync jobs.</li><li>Recurly: rejected; weak usage-based pricing support.</li><li>In-house invoicing: rejected; tax, dunning and credit notes are a full team's worth of work.</li></ul>"
+ },
+ {
+  "id": "30031003",
+  "title": "ADR-018: Temporal for connector sync orchestration",
+  "createdAt": "2026-04-11",
+  "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2026-04-11 &middot; <strong>Owners:</strong> Connectors team</p><h2>Context</h2><p>Connector syncs are long-running, need retries with backoff, resumable backfills and per-tenant concurrency limits.</p><h2>Decision</h2><p>Every connector sync and backfill is orchestrated as a Temporal workflow. No new schedulers for connector syncs.</p><h2>Alternatives considered</h2><ul><li>Apache Airflow: rejected; DAG-per-connector-instance does not scale to 40k instances and the scheduler is a single bottleneck.</li><li>AWS Step Functions: rejected; 25k event history limit breaks large backfills and it locks orchestration to one cloud.</li><li>Kubernetes CronJobs: rejected; no retries/resume semantics.</li></ul>"
+ },
+ {
+  "id": "30031004",
+  "title": "ADR-021: WorkOS for enterprise SSO and SCIM",
+  "createdAt": "2026-05-02",
+  "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2026-05-02 &middot; <strong>Owners:</strong> Identity team</p><h2>Decision</h2><p>Enterprise SSO (SAML, OIDC) and SCIM directory sync are integrated through WorkOS. We do not implement SAML or SCIM protocol handling ourselves.</p><h2>Alternatives considered</h2><ul><li>Auth0: rejected; enterprise connection pricing per IdP is prohibitive.</li><li>Okta Customer Identity: rejected; would force a migration of our existing password login.</li><li>Hand-rolled SAML (python3-saml): rejected; XML signature wrapping bugs are a recurring CVE class.</li></ul>"
+ },
+ {
+  "id": "30031005",
+  "title": "ADR-007: Metabase embedding for customer-facing reports",
+  "createdAt": "2025-06-18",
+  "storage": "<p><strong>Status:</strong> Superseded by ADR-027 (in-house report renderer) &middot; <strong>Date:</strong> 2025-06-18 &middot; <strong>Owners:</strong> Reports team</p><h2>Decision</h2><p>Customer-facing scheduled reports are rendered by embedding Metabase via signed embed URLs.</p><h2>Alternatives considered</h2><ul><li>Looker embedded: rejected on cost.</li></ul><p><em>Note 2026-02: superseded; reports now use the in-house renderer. Do not build on this.</em></p>"
+ },
+ {
+  "id": "30031006",
+  "title": "ADR-024: Move event ingestion from Kinesis to Kafka (MSK)",
+  "createdAt": "2026-10-14",
+  "storage": "<p><strong>Status:</strong> Proposed &middot; <strong>Date:</strong> 2026-10-14 &middot; <strong>Owners:</strong> Ingestion team</p><h2>Context</h2><p>Kinesis shard limits and 7-day retention make replays awkward.</p><h2>Decision (proposed)</h2><p>Replace Kinesis with Amazon MSK for all ingestion streams. Under review; not yet accepted. Until accepted, Kinesis remains the standard.</p><h2>Alternatives</h2><ul><li>Redpanda Cloud: still being evaluated.</li></ul>"
+ },
+ {
+  "id": "30031007",
+  "title": "Engineering Handbook: Tenant Isolation Standard",
+  "createdAt": "2025-11-03",
+  "storage": "<h1>Tenant Isolation Standard</h1><p>Applies to all services that read customer data in the shared ClickHouse and Postgres clusters.</p><h2>Standard</h2><p>Every query against tenant data needs a tenant_id predicate and must go through <code>TenantScopedClient</code>. Raw driver connections (clickhouse_connect, psycopg, JDBC) to shared production clusters are not allowed in application or job code.</p><h2>Exception</h2><p>The Internal Analytics team may run read-only, cross-tenant aggregate jobs against the <strong>anonymized replica</strong> (<code>ch-anon</code>) only. This exception does not cover the production shared clusters.</p>"
+ },
+ {
+  "id": "30031008",
+  "title": "Policy: Customer Data Retention After Termination",
+  "createdAt": "2025-09-09",
+  "storage": "<h1>Customer Data Retention After Termination</h1><h2>Policy</h2><p>No customer data may be kept longer than 30 days after contract termination or account cancellation. This includes warehouse tables, dashboards, exports, snapshots and backups.</p><h2>Scoped exception</h2><p>Invoices and billing records are retained for 7 years for tax purposes (Finance). This exception covers billing records only, not customer datasets.</p><p>Owner: Legal &amp; Security.</p>"
+ },
+ {
+  "id": "30031009",
+  "title": "2026-08-26 Connectors guild meeting notes",
+  "createdAt": "2026-08-26",
+  "storage": "<p><strong>Attendees:</strong> Connectors, AppSec, SRE</p><h2>Discussion</h2><ul><li>NetSuite beta incident: one 40GB tenant saturated the sync workers for 6 hours.</li><li>AppSec found an SSRF in a beta connector's custom-endpoint field.</li></ul><h2>Outcomes</h2><ul><li><strong>Decision:</strong> Before any connector goes GA (general availability, beta label removed), it must pass a load test against the 10x tenant fixture and an AppSec security review.</li></ul><h2>Action items</h2><ul><li>SRE: publish 10x fixture.</li><li>AppSec: review template.</li></ul>"
+ },
+ {
+  "id": "30031010",
+  "title": "Secrets Handling Rules / 시크릿 관리 규칙",
+  "createdAt": "2025-12-01",
+  "storage": "<h1>Secrets Handling</h1><h2>규칙</h2><p>Customer credentials (warehouse passwords, service account keys, OAuth access and refresh tokens) are never stored anywhere other than Vault: not in Postgres, Redis, logs, error tables or files. Services fetch them at use time via the Vault agent.</p><h2>Notes</h2><p>Masked values (e.g. last 4 chars) are not secrets and may be shown in UI.</p>"
+ },
+ {
+  "id": "30031011",
+  "title": "Data Residency Standard (EU tenants)",
+  "createdAt": "2026-02-15",
+  "storage": "<h1>Data Residency</h1><h2>Rule</h2><p>Data belonging to EU-region tenants is stored and processed only in eu-west-1. No replication, log shipping, rendering or processing of EU tenant data in other regions.</p><h2>Exception</h2><p>Aggregated, non-identifying usage counters (rows ingested, seat counts) per EU tenant may be sent to the billing service in us-east-1 for invoicing. Nothing else.</p>"
+ },
+ {
+  "id": "30031012",
+  "title": "2026-07-08 가격정책 회의록",
+  "createdAt": "2026-07-08",
+  "storage": "<p><strong>참석:</strong> 재무, 프라이싱 PM, 빌링팀</p><h2>논의</h2><ul><li>지난 분기 사전 고지 없이 좌석 단가를 올려 해지 문의가 급증함.</li></ul><h2>결정 사항</h2><ul><li><strong>결정:</strong> 기존 고객에게 적용되는 가격 인상은 CFO 승인을 받아야 하며, 적용일 최소 60일 전에 고객에게 고지한다. 신규 가입 고객 대상 가격 변경은 해당 없음.</li></ul>"
+ },
+ {
+  "id": "30031013",
+  "title": "대시보드 쿼리 타임아웃 원칙",
+  "createdAt": "2026-06-02",
+  "storage": "<h1>쿼리 타임아웃</h1><h2>원칙</h2><p>대시보드 인터랙티브 쿼리의 타임아웃은 60초를 초과할 수 없다. 테넌트·플랜과 관계없이 동일하다.</p><h2>예외</h2><p>예약 리포트(scheduled export) 배치 작업은 최대 15분까지 허용한다. 이 예외는 사용자가 화면에서 실행하는 쿼리에는 적용되지 않는다.</p>"
+ },
+ {
+  "id": "30031014",
+  "title": "Production Database Access Guideline",
+  "createdAt": "2026-03-30",
+  "storage": "<h1>Production Database Access</h1><h2>원칙 (Guideline)</h2><p>No direct access (psql, DB console, SQL client) to production databases without an open PagerDuty break-glass ticket. No standing access grants, including read-only, for humans.</p><h2>How</h2><p>Use admin tooling for routine fixes. For incidents, open a break-glass ticket; access is auto-revoked after 4 hours.</p>"
+ }
+]

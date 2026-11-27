@@ -26,6 +26,9 @@
    "body": "We use PostgreSQL as the single system of record for all ledger and account data. We will not introduce MongoDB or any other document database for ledger, transaction or account data.",
    "alternativesRejected": [
     "MongoDB",
+    "document database for ledger",
+    "transaction",
+    "account data",
     "DynamoDB"
    ],
    "rationale": "DynamoDB: rejected because reporting queries would need a separate analytics copy.",

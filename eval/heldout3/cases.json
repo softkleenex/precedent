@@ -1,0 +1,547 @@
+[
+  {
+    "id": "x01",
+    "text": "Use Algolia for hotel search autocomplete\n\nTypeahead on the hotel search box feels slow. Algolia's InstantSearch widgets would give us typo tolerance out of the box. Plan: sync hotel names, city and nightly rate into an Algolia index and point the search box at it.",
+    "problems": [
+      "6104821"
+    ]
+  },
+  {
+    "id": "x02",
+    "text": "Move car rental search index to Elastic Cloud\n\nSelf-hosting the car rental cluster costs us a lot of on-call time. Spin up a managed Elastic Cloud deployment, reindex branches there and cut over the car search API.",
+    "problems": [
+      "6104821"
+    ]
+  },
+  {
+    "id": "x03",
+    "text": "Add Stripe Payment Element to the app checkout\n\nApple Pay / Google Pay conversion is lower in the app than web. Stripe's Payment Element handles wallets nicely; add the Stripe SDK to checkout and create PaymentIntents from the booking API.",
+    "problems": [
+      "6112907"
+    ]
+  },
+  {
+    "id": "x04",
+    "text": "PayPal via Braintree for US bookings\n\nUS market wants PayPal. Integrate the Braintree drop-in on the US checkout and settle those bookings through our Braintree merchant account.",
+    "problems": [
+      "6112907"
+    ]
+  },
+  {
+    "id": "x05",
+    "text": "일본 시장 결제 Toss Payments 연동\n\n한국 결제에 Toss Payments 연동이 잘 돼 있으니 JPY 예약도 같은 연동을 재사용해서 처리하자. 엔화 결제는 Toss 해외 카드 승인으로 받는다.",
+    "problems": [
+      "6112907"
+    ]
+  },
+  {
+    "id": "x06",
+    "text": "예약 취소 이벤트를 RabbitMQ로 로열티에 전달\n\n로열티팀이 취소 이벤트를 받아 포인트를 회수해야 함. booking-service에서 RabbitMQ exchange를 하나 만들고 loyalty-service가 큐로 구독하도록 구성.",
+    "problems": [
+      "6120544"
+    ]
+  },
+  {
+    "id": "x07",
+    "text": "Fan out booking.changed via SNS\n\nNotifications, finance and CRM all need booking changes. Create an SNS topic booking-changed with one SQS subscription per consuming team; booking-service publishes on every change.",
+    "problems": [
+      "6120544"
+    ]
+  },
+  {
+    "id": "x08",
+    "text": "Build new onboarding carousel in Flutter\n\nDesign shipped a heavily animated onboarding flow. Flutter makes these animations much easier; build it as a Flutter module embedded in the iOS and Android apps.",
+    "problems": [
+      "6131788"
+    ]
+  },
+  {
+    "id": "x09",
+    "text": "Add Bugsnag to Android app\n\nRelease stability numbers are hard to read. Add the Bugsnag Android SDK so we get per-release stability scores for the PMs.",
+    "problems": [
+      "6152219"
+    ]
+  },
+  {
+    "id": "x10",
+    "text": "iOS: integrate Crashlytics for ANR / hang tracking\n\nWe miss main-thread hangs on iOS. Firebase Crashlytics reports these well; add FirebaseCrashlytics pod and upload dSYMs in the CI lane.",
+    "problems": [
+      "6152219"
+    ]
+  },
+  {
+    "id": "x11",
+    "text": "hotel-pricing: query Sabre directly for rate refresh\n\nGoing through supplier-gateway adds ~120 ms to each rate refresh. hotel-pricing can call the Sabre hotel availability endpoint itself; we only need read access so it should be harmless.",
+    "problems": [
+      "6163045"
+    ]
+  },
+  {
+    "id": "x12",
+    "text": "fare-alerts: add Amadeus client credentials\n\nAdd AMADEUS_CLIENT_ID / AMADEUS_CLIENT_SECRET to the fare-alerts deployment secrets and use the amadeus-node SDK to fetch flight offers for subscribed routes.",
+    "problems": [
+      "6163045"
+    ]
+  },
+  {
+    "id": "x13",
+    "text": "Log full request body on /payments/authorize\n\nDebugging declines is painful. Temporarily switch the authorize endpoint logger to dump the complete request JSON (card object included) at INFO so we can see what the client sent.",
+    "problems": [
+      "6170918"
+    ]
+  },
+  {
+    "id": "x14",
+    "text": "Send card details in fraud scoring event\n\nThe fraud team's model wants the BIN and full card number to detect card testing. Add card_number to the checkout_submitted analytics event so it lands in the fraud feature store.",
+    "problems": [
+      "6170918"
+    ]
+  },
+  {
+    "id": "x15",
+    "text": "결제 실패 시 카드번호 전체를 상담 티켓에 첨부\n\n상담원이 결제 실패 문의를 처리할 때 카드사 확인용으로 카드번호 16자리가 필요하다고 함. 결제 실패 웹훅에서 Zendesk 티켓 생성 시 카드번호 전체를 내부 메모로 넣어주기.",
+    "problems": [
+      "6170918"
+    ]
+  },
+  {
+    "id": "x16",
+    "text": "여권번호를 BigQuery 예약 마트에 추가\n\n국적별·여권 만료 임박 고객 분석을 위해 booking_mart 테이블에 passport_number, passport_expiry 컬럼을 추가하고 일 배치로 적재.",
+    "problems": [
+      "6182376"
+    ]
+  },
+  {
+    "id": "x17",
+    "text": "Keep passport details for 2 years for faster rebooking\n\nReturning customers hate re-entering passports. Store passport number and expiry on the traveller profile for 24 months so the next booking can prefill them.",
+    "problems": [
+      "6182376"
+    ]
+  },
+  {
+    "id": "x18",
+    "text": "Ship checkout promo banner during Black Friday\n\nMarketing wants the 'extra 10% off' banner inside checkout to go live Saturday 29 Nov at 10:00 CET, mid Black Friday weekend. Deploy checkout-web then.",
+    "problems": [
+      "6195507"
+    ]
+  },
+  {
+    "id": "x19",
+    "text": "payments-service migration: add settlement_batch_id\n\nSchedule the migration and deploy for Friday 18:00 CET when traffic is low. Adds a nullable column and backfills.",
+    "problems": [
+      "6195507"
+    ]
+  },
+  {
+    "id": "x20",
+    "text": "Let senior agents issue goodwill vouchers up to EUR 1000\n\nSecond approvals slow down Tier-3 agents. Give the senior_agent role direct issuance of goodwill vouchers up to EUR 1000 in the support console.",
+    "problems": [
+      "6203614"
+    ]
+  },
+  {
+    "id": "x21",
+    "text": "Bulk refund button for disrupted flights\n\nWhen a flight is delayed agents often refund the hotel add-on manually. Add a one-click 'refund all' button that issues the full refund (often EUR 1,500+) straight from the case view.",
+    "problems": [
+      "6203614"
+    ]
+  },
+  {
+    "id": "x22",
+    "text": "Fix negative points balances with SQL script\n\n~300 members have negative balances after the double-redemption bug. Write a script that runs UPDATE points_balance SET balance = 0 WHERE balance < 0 on the loyalty DB.",
+    "problems": [
+      "6214470"
+    ]
+  },
+  {
+    "id": "x23",
+    "text": "Partner hotel service: track members' points locally\n\npartner-hotels needs points for its 'pay with points' upsell. Add a member_points table in partner-hotels and keep it updated from redemptions so we do not depend on loyalty for reads or writes.",
+    "problems": [
+      "6214470"
+    ]
+  },
+  {
+    "id": "x24",
+    "text": "포인트 만료 배치 성능 개선\n\n만료 배치가 ledger API 호출 때문에 6시간 걸림. 배치에서 loyalty DB에 직접 붙어서 만료 대상 잔액을 한 번에 UPDATE 하도록 변경.",
+    "problems": [
+      "6214470"
+    ]
+  },
+  {
+    "id": "x25",
+    "text": "Enable live bookings for SunCars next week\n\nSandbox certification passed yesterday. Commercial launch is Monday, so skip the shadow period and flip the booking flag on Monday morning.",
+    "problems": [
+      "6226081"
+    ]
+  },
+  {
+    "id": "x26",
+    "text": "Hotelbeds API v3: turn on bookings\n\nCertification suite is green on v3. Switch booking traffic from v2 to v3 today and run shadow comparison in parallel for a week to catch issues.",
+    "problems": [
+      "6226081"
+    ]
+  },
+  {
+    "id": "x27",
+    "text": "상담원 고객 리스트 엑셀 다운로드 기능\n\nVIP 관리팀 요청. 상담 콘솔에서 조건으로 필터한 고객 목록(최대 5,000건, 이름·전화·이메일 포함)을 엑셀로 바로 다운로드할 수 있게 해 주세요.",
+    "problems": [
+      "6238893"
+    ]
+  },
+  {
+    "id": "x28",
+    "text": "Export complaint customers to Google Sheet\n\nFor the apology campaign, add a button in support-console that pushes all customers with an open complaint (name, email, phone) into a shared Google Sheet.",
+    "problems": [
+      "6238893"
+    ]
+  },
+  {
+    "id": "x29",
+    "text": "Checkout v2 rollout chores\n\n- bump checkout-web dependencies\n- add Stripe as fallback PSP when Adyen times out\n- update copy on payment page\n- deploy Friday evening after the sprint demo",
+    "problems": [
+      "6112907",
+      "6195507"
+    ]
+  },
+  {
+    "id": "x30",
+    "text": "Q3 mobile housekeeping\n\nGrab bag for the sprint:\n1. Upgrade react-native-reanimated\n2. Remove unused icon fonts\n3. Fix flaky detox test on trip list\n4. Add Firebase Crashlytics for Android native crashes\n5. Update Fastlane match certs",
+    "problems": [
+      "6152219"
+    ]
+  },
+  {
+    "id": "x31",
+    "text": "Launch Jeju Rent-a-car integration\n\nNew KR car supplier. Rental-service will call the Jeju Rent-a-car REST API directly with our API key. Their sandbox test passed, so we go live with bookings this sprint.",
+    "problems": [
+      "6226081",
+      "6163045"
+    ]
+  },
+  {
+    "id": "x32",
+    "text": "여권 스캔 이미지 처리 로그 및 보관\n\nOCR 실패 분석을 위해 여권 스캔 이미지와 인식된 여권번호를 애플리케이션 로그에 남기고, 이미지는 S3에 6개월 보관.",
+    "problems": [
+      "6182376"
+    ]
+  },
+  {
+    "id": "x33",
+    "text": "Trip details screen: rebuild in Xamarin.Forms\n\nThe legacy Xamarin app still ships the trip details screen. Rework its layout in Xamarin.Forms XAML to add the new baggage section.",
+    "problems": [
+      "6131788"
+    ]
+  },
+  {
+    "id": "x34",
+    "text": "Remember card form between sessions\n\nUsers abandon checkout and lose what they typed. Persist the card form (number, expiry, CVC) in localStorage and restore it on return.",
+    "problems": [
+      "6170918"
+    ]
+  },
+  {
+    "id": "x35",
+    "text": "렌터카 검색 Algolia 전환\n\n렌터카 검색 PoC를 Algolia로 해봤는데 결과가 좋음. 다음 분기에 운영 렌터카 검색을 Algolia 인덱스로 전환하는 작업.",
+    "problems": [
+      "6104821"
+    ]
+  },
+  {
+    "id": "x36",
+    "text": "Fare alert polling job\n\nCron in fare-alerts that hits the Amadeus Flight Offers Search API every 5 minutes for every subscribed route and stores the cheapest price.",
+    "problems": [
+      "6163045"
+    ]
+  },
+  {
+    "id": "x37",
+    "text": "Auto-approve refunds under EUR 2,000 for Gold members\n\nGold members complain about refund waiting time. If loyalty tier is Gold and amount < EUR 2,000, auto-approve the refund request without a second approver.",
+    "problems": [
+      "6203614"
+    ]
+  },
+  {
+    "id": "x38",
+    "text": "Loyalty: credit points on booking via RabbitMQ consumer\n\nAdd a RabbitMQ consumer in loyalty-worker for booking.confirmed and insert the earned points directly into points_balance.",
+    "problems": [
+      "6120544",
+      "6214470"
+    ]
+  },
+  {
+    "id": "x39",
+    "text": "금요일 저녁 결제 서비스 배포\n\n이번 주 금요일 19시(CET)에 payments-service 3DS 타임아웃 수정 배포. 장애 아니고 개선 건.",
+    "problems": [
+      "6195507"
+    ]
+  },
+  {
+    "id": "x40",
+    "text": "Publish booking events to Google Pub/Sub\n\nData team's new pipeline is on GCP. Publish booking.created and booking.cancelled to a Pub/Sub topic and let CRM and finance subscribe there too.",
+    "problems": [
+      "6120544"
+    ]
+  },
+  {
+    "id": "x41",
+    "text": "Trips tab rewrite with Kotlin Multiplatform\n\nTrips tab is slow on Android. Rewrite it natively with Compose Multiplatform so iOS and Android share Kotlin UI code.",
+    "problems": [
+      "6131788"
+    ]
+  },
+  {
+    "id": "x42",
+    "text": "상담 콘솔에 카드 전체 번호 표시\n\n본인 확인용으로 상담 콘솔 예약 상세 화면에 결제 카드 전체 번호를 노출해 주세요.",
+    "problems": [
+      "6170918"
+    ]
+  },
+  {
+    "id": "x43",
+    "text": "포인트 잔액 캐시 TTL 늘리기\n\n앱 홈 화면의 포인트 잔액 조회가 너무 잦음. balance 캐시 TTL을 30분으로 늘려서 loyalty-ledger 호출 줄이기.",
+    "problems": [
+      "6214470"
+    ]
+  },
+  {
+    "id": "x44",
+    "text": "Fix typo in hotel confirmation email\n\nConfirmation email says 'Check-in from 15:00 untill 23:00'.",
+    "problems": []
+  },
+  {
+    "id": "x45",
+    "text": "Tune OpenSearch shard count for hotel index\n\nHotel index has 40 shards for 1.9M docs. Reduce to 12 primaries and reindex during low traffic.",
+    "problems": []
+  },
+  {
+    "id": "x46",
+    "text": "Help center: Algolia DocSearch for FAQ articles\n\nThe CMS-hosted help center has no search. Content team wants to add Algolia DocSearch on the FAQ articles only.",
+    "problems": []
+  },
+  {
+    "id": "x47",
+    "text": "Decommission legacy Stripe webhook\n\nWe migrated off Stripe last year but the /webhooks/stripe endpoint and test keys are still around. Remove them.",
+    "problems": []
+  },
+  {
+    "id": "x48",
+    "text": "KRW 예약 카카오페이 결제 연동\n\n원화 예약에서 카카오페이를 Toss Payments 경유로 받을 수 있게 결제 수단 추가.",
+    "problems": []
+  },
+  {
+    "id": "x49",
+    "text": "Spike: Braintree fee comparison for 2027 renewal\n\nFinance wants numbers before Adyen renewal talks. Collect Braintree and Stripe quotes for our volume; document only, no code.",
+    "problems": []
+  },
+  {
+    "id": "x50",
+    "text": "알림 서비스 이메일 재시도 SQS 큐 추가\n\nnotification-service 내부에서 이메일 발송 실패 건 재시도를 위한 SQS 큐 추가. 다른 서비스는 사용하지 않음.",
+    "problems": []
+  },
+  {
+    "id": "x51",
+    "text": "Loyalty consumer group for booking.cancelled\n\nAdd a loyalty-points consumer group on the booking.cancelled MSK topic and claw back points via the ledger API.",
+    "problems": []
+  },
+  {
+    "id": "x52",
+    "text": "Migrate settings screen from Xamarin to React Native\n\nLast remaining Xamarin screen. Port it to RN and delete the Xamarin project.",
+    "problems": []
+  },
+  {
+    "id": "x53",
+    "text": "Apple Wallet boarding pass native module\n\nWrite a small Swift module that adds the boarding pass to Apple Wallet; expose addPass() to JS.",
+    "problems": []
+  },
+  {
+    "id": "x54",
+    "text": "Upload source maps to Sentry in web CI\n\nStack traces in Sentry are minified for checkout-web. Add the sentry-cli sourcemaps upload step.",
+    "problems": []
+  },
+  {
+    "id": "x55",
+    "text": "Remove leftover Crashlytics config\n\ngoogle-services.json still has a Crashlytics block from an old experiment. Remove it and the gradle plugin.",
+    "problems": []
+  },
+  {
+    "id": "x56",
+    "text": "Prototype GraphQL gateway for partner API\n\nSpike for RFC-031: stand up Apollo gateway in staging with the itinerary subgraph so the review has numbers on latency.",
+    "problems": []
+  },
+  {
+    "id": "x57",
+    "text": "supplier-gateway: rotate Hotelbeds credentials\n\nMove Hotelbeds API secret to the vault and add automatic 90-day rotation in supplier-gateway.",
+    "problems": []
+  },
+  {
+    "id": "x58",
+    "text": "Content ingest: pull hotel images from Expedia SFTP nightly\n\nContent team job: fetch the image and description files from the bedbank SFTP drop at 02:00 and update the content store.",
+    "problems": []
+  },
+  {
+    "id": "x59",
+    "text": "Redact PAN in payment logs\n\nAdd the shared redaction middleware to payments-service request logging; add a test that a 16-digit number is masked.",
+    "problems": []
+  },
+  {
+    "id": "x60",
+    "text": "Show card brand and last 4 in support console\n\nAgents ask customers which card they used. Show brand + last 4 digits from the vault token metadata on the booking page.",
+    "problems": []
+  },
+  {
+    "id": "x61",
+    "text": "여권 정보 30일 경과 삭제 배치\n\n마지막 출발일 + 30일 지난 예약의 여권번호, 만료일, 스캔 이미지를 매일 삭제하는 배치 구현.",
+    "problems": []
+  },
+  {
+    "id": "x62",
+    "text": "legal hold 예약 여권 정보 삭제 제외\n\n법무팀이 legal hold 플래그를 건 예약은 30일 삭제 배치에서 제외하고, 플래그 해제 시 즉시 삭제.",
+    "problems": []
+  },
+  {
+    "id": "x63",
+    "text": "체크아웃 쿠폰 입력란 배포\n\n화요일 오전 10시(CET) checkout-web 배포. 쿠폰 코드 입력란 추가.",
+    "problems": []
+  },
+  {
+    "id": "x64",
+    "text": "Hotfix: double charge on retry\n\nSaturday incident INC-482. IC approved the hotfix in #inc-482; deploying payments-service patch now.",
+    "problems": []
+  },
+  {
+    "id": "x65",
+    "text": "Deploy new marketing landing page Friday night\n\nWinter campaign landing page on the marketing site goes live Friday 22:00 CET.",
+    "problems": [],
+    "acceptable": [
+      "6195507"
+    ]
+  },
+  {
+    "id": "x66",
+    "text": "Second-approver flow for refunds over EUR 400\n\nAdd approval request state to the refund form; Support Ops leads get a queue to approve or reject.",
+    "problems": []
+  },
+  {
+    "id": "x67",
+    "text": "Auto refunds for KLM strike cancellations\n\nRefund-automation should process the 2,300 KLM strike cancellations from the supplier messages; many exceed EUR 400.",
+    "problems": []
+  },
+  {
+    "id": "x68",
+    "text": "로열티 원장 API에 만료 엔드포인트 추가\n\nloyalty-ledger에 POST /expiries 추가. 사유 코드와 함께 저널 기록.",
+    "problems": []
+  },
+  {
+    "id": "x69",
+    "text": "Cache points balance in app header for 3 minutes\n\nHeader shows points on every screen. Cache the balance from the ledger API for 3 minutes.",
+    "problems": []
+  },
+  {
+    "id": "x70",
+    "text": "SunCars: enable bookings after shadow review\n\nShadow mode ran 9 days, mismatch report signed off by partner manager on Tuesday. Flip the booking flag.",
+    "problems": []
+  },
+  {
+    "id": "x71",
+    "text": "Certification suite: add cancellation scenario\n\nAdd a cancel-within-24h scenario to the supplier certification suite.",
+    "problems": []
+  },
+  {
+    "id": "x72",
+    "text": "상담 콘솔 내보내기 200건 제한\n\n고객 목록 내보내기 버튼에 200건 상한 추가, 초과 시 DPO 승인 요청 안내 문구 표시.",
+    "problems": []
+  },
+  {
+    "id": "x73",
+    "text": "DPO 승인 건 고객 데이터 추출\n\nDPO-221 승인 완료. 데이터팀에서 보상 대상 고객 3,000건 추출해서 보안 드라이브로 전달.",
+    "problems": []
+  },
+  {
+    "id": "x74",
+    "text": "Upgrade React Native to 0.76\n\nBump RN, fix breaking changes in navigation and run the detox suite.",
+    "problems": []
+  },
+  {
+    "id": "x75",
+    "text": "호텔 검색 정렬에 리뷰 점수 반영\n\nOpenSearch 호텔 쿼리의 function_score에 리뷰 점수 가중치 추가.",
+    "problems": []
+  },
+  {
+    "id": "x76",
+    "text": "Fare calendar contrast fixes\n\nAccessibility audit items 3-7: increase contrast of weekend and price colours.",
+    "problems": []
+  },
+  {
+    "id": "x77",
+    "text": "Increase booking.events retention to 14 days\n\nFinance replays a week of events during month close; raise topic retention on MSK from 7 to 14 days.",
+    "problems": []
+  },
+  {
+    "id": "x78",
+    "text": "APIS 제출 시 여권번호 전송\n\n발권 단계에서 항공사 APIS 제출 시 여권번호와 만료일을 supplier-gateway 통해 전송하도록 수정.",
+    "problems": []
+  },
+  {
+    "id": "x79",
+    "text": "Rotate Adyen API key\n\nScheduled quarterly rotation of the Adyen API key in payments-service.",
+    "problems": []
+  },
+  {
+    "id": "x80",
+    "text": "Postmortem: Nov 3 checkout outage\n\nWrite up the timeline, root cause and action items.",
+    "problems": []
+  },
+  {
+    "id": "x81",
+    "text": "Internal kiosk app for airport desk staff in Flutter\n\nOps wants a tablet app for airport desk staff (not customer-facing). Small team suggests Flutter for it.",
+    "problems": [],
+    "acceptable": [
+      "6131788"
+    ]
+  },
+  {
+    "id": "x82",
+    "text": "Algolia pricing for ADR-009 revisit\n\nIndex is approaching 5M docs. Gather current Algolia and Elastic Cloud pricing for the revisit discussion.",
+    "problems": []
+  },
+  {
+    "id": "x83",
+    "text": "로그인 화면 다크모드 지원\n\n앱 로그인 화면 다크모드 색상 토큰 적용.",
+    "problems": []
+  },
+  {
+    "id": "x84",
+    "text": "Show one-way drop fee on car results\n\nDisplay the supplier's one-way fee on the car rental results card.",
+    "problems": []
+  },
+  {
+    "id": "x85",
+    "text": "Sprint chores: dependency bumps\n\n- bump axios and date-fns in booking-web\n- upgrade @sentry/react-native to 6.x\n- update README setup section\n- delete dead feature flags from 2024",
+    "problems": []
+  },
+  {
+    "id": "x86",
+    "text": "supplier-gateway: raise Sabre timeout\n\nSabre hotel availability times out at 3s during peak; raise to 5s in supplier-gateway config.",
+    "problems": []
+  },
+  {
+    "id": "x87",
+    "text": "3DS 챌린지 네이티브 모듈 버그 수정\n\nAndroid 3DS 챌린지 화면 네이티브 모듈에서 뒤로가기 시 크래시. 수정.",
+    "problems": []
+  },
+  {
+    "id": "x88",
+    "text": "Remove passport number from booking-service debug logs\n\nFound passport numbers in debug logs. Strip them and purge the affected log index.",
+    "problems": []
+  },
+  {
+    "id": "x89",
+    "text": "Partner API: pagination on GET /bookings\n\nCorporate partners hit timeouts on large accounts. Add cursor pagination to the REST endpoint.",
+    "problems": []
+  },
+  {
+    "id": "x90",
+    "text": "Track search filter usage\n\nAdd analytics events for which hotel filters are used (filter name only, no user data).",
+    "problems": []
+  }
+]

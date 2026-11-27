@@ -1,0 +1,92 @@
+[
+  {
+    "id": "6104821",
+    "title": "ADR-009: OpenSearch for hotel and car rental search",
+    "createdAt": "2026-03-04",
+    "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2026-03-04 &middot; <strong>Owners:</strong> Search &amp; Discovery</p><h2>Context</h2><p>We index about 1.9M hotel properties and 41k car rental branches. Rates change several times a day, most queries are geo-bounded (\"hotels within 3 km of the venue\") and the results page relies on facet counts for price bands, star rating and amenities. The legacy MySQL LIKE search cannot keep up and p99 is over 2 seconds during sales.</p><h2>Decision</h2><p>Hotel, car rental and destination search run on our self-managed OpenSearch cluster. We will not move inventory search to Algolia or any other hosted search SaaS.</p><h2>Alternatives considered</h2><ul><li><strong>Algolia</strong> &mdash; rejected. Per-record pricing at our inventory size came out at roughly 4x the OpenSearch cost, and three of our bedbank contracts forbid pushing net rates to a third-party processor.</li><li><strong>Elastic Cloud</strong> &mdash; rejected on licence terms and price; functionally equivalent.</li><li><strong>Apache Solr</strong> &mdash; rejected; nobody on the team has run it in production and the geo aggregation story was weaker in our spike.</li></ul><h2>Consequences</h2><p>Search &amp; Discovery owns the cluster, index templates and reindex jobs. Searching help-center articles and other CMS marketing content is out of scope for this ADR; the content team may use whatever search their CMS provides.</p><h2>Revisit when</h2><p>The hotel index passes 5M documents or p99 query latency stays above 400 ms for a full month.</p>"
+  },
+  {
+    "id": "6112907",
+    "title": "ADR-014: Adyen as our payment service provider",
+    "createdAt": "2026-02-17",
+    "storage": "<p><strong>Status:</strong> Accepted<br/><strong>Date:</strong> 2026-02-17<br/><strong>Deciders:</strong> Payments guild, Finance, CTO</p><h2>Context</h2><p>We currently have three PSP integrations that grew organically. Reconciliation takes Finance two days per month, chargeback handling differs per provider and airline bookings need MCC 4722 merchant-of-record handling with split settlement to carriers.</p><h2>Decision</h2><p>All card and wallet payments for bookings are processed through Adyen, via our own payments-service. Teams do not integrate Stripe, Braintree, Checkout.com or any other PSP directly.</p><h2>Alternatives considered</h2><ul><li>Stripe: good developer experience, but weaker local acquiring in APAC and no support for our split-settlement model for airline tickets.</li><li>Braintree: PayPal coverage is attractive, but Adyen supports PayPal as a payment method so it adds nothing; fees were higher.</li><li>Keep multiple PSPs with a routing layer: rejected, the reconciliation pain is the problem we are solving.</li></ul><h2>Exceptions</h2><p>KRW-denominated bookings may use Toss Payments for Korean domestic cards, KakaoPay and Naver Pay, because Adyen cannot do the local card authentication those methods require. The exception covers KRW bookings only; it is not a general second PSP.</p><h2>Revisit</h2><p>At the Adyen contract renewal in Q2 2027.</p>"
+  },
+  {
+    "id": "6120544",
+    "title": "ADR-021: 예약 이벤트 스트리밍에 Kafka(Amazon MSK) 사용",
+    "createdAt": "2026-05-19",
+    "storage": "<p><strong>상태:</strong> 승인됨 &middot; <strong>날짜:</strong> 2026-05-19 &middot; <strong>작성:</strong> 예약플랫폼팀</p><h2>배경</h2><p>예약 생성/변경/취소 이벤트를 로열티, 알림, 정산, CRM 등 6개 팀이 구독하고 있다. 지금은 booking-service가 각 팀에 HTTP 웹훅을 직접 호출하는데, 한 팀의 장애가 재시도 폭주로 이어지고 누락된 이벤트를 다시 받을 방법이 없다.</p><h2>결정</h2><p>서비스 간 비동기 이벤트는 Amazon MSK(Kafka) 토픽으로 발행하고 구독한다. 서비스 간 이벤트 전달 용도로 RabbitMQ나 Amazon SQS/SNS를 새로 도입하지 않는다.</p><h2>검토한 대안</h2><ul><li>RabbitMQ: 메시지 재처리(replay)가 어렵고 운영해 본 인력이 없음.</li><li>SQS/SNS: 운영 부담은 적지만 소비자별 재생과 파티션 단위 순서 보장이 안 됨.</li><li>현행 웹훅 유지: 위 장애 문제를 해결하지 못함.</li></ul><h2>예외</h2><p>한 서비스 내부에서만 쓰는 작업 큐(예: 알림 서비스의 이메일 발송 재시도)는 SQS를 써도 된다. 다른 팀이 구독하는 이벤트는 반드시 MSK로 나간다.</p><h2>재검토 조건</h2><p>MSK 비용이 월 1만 달러를 넘거나 이벤트 지연 p99가 5초를 넘을 때.</p>"
+  },
+  {
+    "id": "6131260",
+    "title": "ADR-006: Xamarin.Forms for the mobile booking apps",
+    "createdAt": "2023-09-12",
+    "storage": "<p><strong>Status:</strong> Superseded by ADR-018 (2026-04-02) &mdash; kept for history, do not use for new work.<br/><strong>Original date:</strong> 2023-09-12</p><h2>Context</h2><p>We need iOS and Android apps for booking and trip management. Our backend is .NET and the team is small.</p><h2>Decision</h2><p>Build both mobile apps with Xamarin.Forms so business logic can be shared in C# with the backend.</p><h2>Alternatives</h2><ul><li>React Native: team had little TypeScript experience at the time.</li><li>Two native apps: not enough people.</li></ul><h2>Consequences</h2><p>UI customisation is limited; platform-specific renderers will be needed for maps.</p>"
+  },
+  {
+    "id": "6131788",
+    "title": "ADR-018: React Native for the customer mobile apps",
+    "createdAt": "2026-04-02",
+    "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2026-04-02 &middot; <strong>Supersedes:</strong> ADR-006</p><h2>Context</h2><p>Xamarin is out of support and our web team now writes TypeScript everywhere. Feature parity between web and app lags by two to three sprints.</p><h2>Decision</h2><p>The customer iOS and Android apps are built with React Native and TypeScript. New screens are not written in Flutter, in Xamarin, or as separate native Swift/Kotlin UIs; the remaining Xamarin screens are migrated to React Native.</p><h2>Alternatives considered</h2><ul><li>Flutter &mdash; rejected: nobody knows Dart and we could not share code with the web checkout.</li><li>Fully native (Swift + Kotlin, incl. Kotlin Multiplatform/Compose) &mdash; rejected: requires two mobile teams we do not have.</li></ul><h2>Consequences and exceptions</h2><p>Native modules are allowed where React Native cannot reach the platform API: Apple Wallet / Google Wallet boarding passes, and the 3-D Secure challenge screens from the payment SDK. Those modules stay thin and expose a JS interface.</p><h2>Revisit when</h2><p>Cold start on our reference mid-tier Android device exceeds 2.5 s.</p>"
+  },
+  {
+    "id": "6140032",
+    "title": "RFC-031: GraphQL federation gateway for the partner API",
+    "createdAt": "2026-10-08",
+    "storage": "<p><strong>Status:</strong> Proposed &mdash; under discussion, not approved. Comments open until the architecture review on 2026-12-10.</p><p><strong>Author:</strong> Partner Platform</p><h2>Problem</h2><p>Affiliate and corporate-travel partners call 6&ndash;9 REST endpoints to build one itinerary view. They keep asking for a single query.</p><h2>Proposal</h2><p>Put an Apollo Federation gateway in front of the partner API and build new partner-facing endpoints as GraphQL subgraphs rather than REST resources. Existing REST endpoints stay until partners migrate.</p><h2>Open questions</h2><ul><li>How do we rate limit by query cost?</li><li>Do we need persisted queries only for partners?</li><li>Who owns the gateway on call?</li></ul><p>Until this RFC is accepted, the partner API remains REST-first.</p>"
+  },
+  {
+    "id": "6152219",
+    "title": "Mobile & Web weekly sync — 2026-06-11",
+    "createdAt": "2026-06-11",
+    "storage": "<p><strong>Attendees:</strong> Mobile chapter, Web checkout, QA, SRE (rotating)</p><h2>Agenda</h2><ol><li>Release train 6.14 status</li><li>Crash reporting tooling</li><li>Accessibility audit findings</li></ol><h2>Notes</h2><ul><li>6.14 is on track; the trip-sharing feature slipped to 6.15 because of a deep-link bug on Android 15.</li><li>Android folks want Firebase Crashlytics because of the ANR reports. Bugsnag trial ended last week; nobody felt strongly. SRE pointed out that on-call already lives in Sentry and correlating web, API and app errors in one place is what saved us during the May outage.</li><li>Accessibility audit: 14 issues, mostly colour contrast on the fare calendar and missing labels on the seat map.</li></ul><h2>Outcomes</h2><ul><li><strong>Decision:</strong> Crash and error reporting for web and both mobile apps stays on Sentry. We are not adding Firebase Crashlytics or Bugsnag SDKs to the apps; ANR tracking will use Sentry's ANR integration.</li></ul><h2>Action items</h2><ul><li>Enable Sentry ANR detection on Android (Mobile chapter)</li><li>File tickets for the 14 accessibility issues (QA)</li><li>Move trip-sharing to 6.15 board (PM)</li></ul>"
+  },
+  {
+    "id": "6163045",
+    "title": "Engineering Handbook › Supplier connectivity",
+    "createdAt": "2026-01-22",
+    "storage": "<p>This page applies to every service that talks to an external travel supplier: GDSs (Amadeus, Sabre, Travelport), airline NDC APIs, hotel bedbanks and channel managers, and car rental supplier APIs.</p><h2>Policy</h2><p>All calls to external suppliers go through <strong>supplier-gateway</strong>. Product services must not hold supplier credentials and must not call supplier endpoints directly, not even for read-only availability or pricing lookups.</p><h2>Why</h2><p>Our GDS contracts carry look-to-book ratio limits and per-second quotas that are enforced across the whole company. supplier-gateway is where quota, caching, credential rotation and response normalisation live. When a team bypassed it in 2025, Amadeus throttled our production PCC for six hours.</p><h2>Exception</h2><p>The nightly static content ingest run by the Content team (hotel descriptions, images, amenity lists delivered as files) may pull directly from supplier SFTP drops. It carries no live rates or availability.</p><h2>Contacts</h2><p>#supplier-gateway, owner: Connectivity team.</p>"
+  },
+  {
+    "id": "6170918",
+    "title": "Security Standard SEC-03: Cardholder data",
+    "createdAt": "2026-01-09",
+    "storage": "<h2>Scope</h2><p>All systems, logs, analytics pipelines, support tools and client applications.</p><h2>Standard</h2><p>Full card numbers (PAN) and card security codes (CVV/CVC) never leave the card vault (<em>cde-vault</em>). They must not be stored, logged, cached, put in analytics events or attached to support tickets anywhere outside the vault. Outside the vault, services and people work only with vault tokens, card brand and the last four digits. CVV is never persisted at all, not even inside the vault after authorisation.</p><h2>Notes</h2><ul><li>Browser and app code posts card fields straight to the vault's hosted fields; our own servers never see the raw number.</li><li>Request/response logging on payment endpoints must use the shared redaction middleware.</li><li>Violations are treated as security incidents and reported to the PCI QSA.</li></ul>"
+  },
+  {
+    "id": "6182376",
+    "title": "개인정보 처리 원칙 — 여권 및 신분증 정보",
+    "createdAt": "2026-04-15",
+    "storage": "<p>적용 대상: 항공 예약, 고객센터, 데이터 플랫폼을 포함한 전 조직</p><h2>원칙</h2><p>여권번호, 여권 만료일, 국적, 신분증 스캔 이미지(이하 여권 정보)는 항공권 발권과 출입국 사전 정보(APIS) 제출에만 사용한다. 여권 정보는 여정의 마지막 출발일로부터 <strong>30일이 지나면 삭제</strong>해야 하며, 데이터 웨어하우스(BigQuery)나 애플리케이션 로그, 분석 이벤트로 복제해서는 안 된다.</p><h2>배경</h2><p>여권 정보는 유출 시 피해가 크고 일부 국가 규정상 목적 외 보관이 금지되어 있다. 재예약 편의를 위한 장기 보관 요청이 여러 번 있었지만 받아들이지 않았다.</p><h2>예외</h2><p>법적 분쟁이나 수사기관 요청이 있는 예약은 법무팀이 legal hold 플래그를 설정한 경우에 한해 삭제를 미룬다. 플래그 해제 시 즉시 삭제한다.</p>"
+  },
+  {
+    "id": "6195507",
+    "title": "Release council — 2026-07-23",
+    "createdAt": "2026-07-23",
+    "storage": "<p><strong>Present:</strong> SRE, Payments, Booking, Checkout, Release management</p><h2>Discussion</h2><ul><li>Review of the two July weekend incidents: both were checkout deploys on a Friday evening, both took over three hours to roll back because the owning team was off.</li><li>Payments asked whether the freeze should cover config changes too. Agreed it covers anything that goes through the deploy pipeline for those services, including DB migrations.</li><li>Marketing site and the blog are out of scope; they do not touch bookings.</li></ul><h2>Outcome</h2><ul><li><strong>Decision:</strong> No production deploys to the booking, checkout or payments services between Friday 16:00 and Monday 09:00 CET, and none during sale events on the freeze calendar (Black Friday, Cyber Monday, summer sale). Hotfixes in those windows are allowed only with the incident commander's approval recorded in the incident channel.</li></ul><h2>Actions</h2><ul><li>Add freeze check to the deploy pipeline (SRE)</li><li>Publish 2026 freeze calendar (Release mgmt)</li></ul>"
+  },
+  {
+    "id": "6203614",
+    "title": "Support Handbook › Refunds and goodwill credits",
+    "createdAt": "2026-02-03",
+    "storage": "<h2>Rule</h2><p>Any refund or goodwill credit above <strong>EUR 400</strong> (or the equivalent in the booking currency) must be approved by a second person from the Support Ops leads group in the support console before it is issued. Agents cannot approve their own requests, and our tooling must not offer a single-step path to issue anything above the threshold, whatever the agent's tier or the customer's loyalty status.</p><h2>Why</h2><p>In 2025 we lost about EUR 180k to social-engineered goodwill credits. Most of it went through single agents on night shifts.</p><h2>Exemption</h2><p>Involuntary refunds, where the airline or hotel cancelled and the refund is created automatically by the refund-automation flow from the supplier's cancellation message, do not need a second approver.</p><h2>Related</h2><p>Voucher codes, Chargeback handling, Escalation matrix.</p>"
+  },
+  {
+    "id": "6214470",
+    "title": "Loyalty platform: our approach to points balances",
+    "createdAt": "2026-03-27",
+    "storage": "<p>Owner: Loyalty team. Applies to every service that awards, spends, expires or adjusts SkyNest points.</p><h2>Our approach</h2><p>Every change to a member's points balance goes through the <strong>loyalty-ledger API</strong> (accrual, redemption, expiry, manual adjustment), which writes an immutable journal entry. Nobody runs UPDATE/INSERT statements or one-off scripts against the loyalty database, and no other service keeps its own balance as a source of truth.</p><h2>What is fine</h2><p>Services may cache a member's balance for display purposes with a TTL of at most 5 minutes. Analytics may read the nightly replica.</p><h2>Why</h2><p>Points are a liability on our balance sheet; auditors need every movement to be traceable to a journal entry with a reason code.</p>"
+  },
+  {
+    "id": "6226081",
+    "title": "Guideline: onboarding a new supplier",
+    "createdAt": "2026-05-06",
+    "storage": "<p>For Connectivity, Partner management and the owning product squad.</p><h2>Guideline</h2><p>Before a new supplier (or a new major API version of an existing supplier) can take live bookings, it has to:</p><ol><li>pass our certification suite against the supplier's sandbox;</li><li>run in shadow mode in production &mdash; search and pricing only, no bookings &mdash; for at least <strong>7 days</strong>;</li><li>get sign-off from the partner manager on the shadow-mode mismatch report.</li></ol><p>Only then is the booking flag switched on. Steps are not skipped or run in parallel, even when the commercial deadline is close.</p><h2>Background</h2><p>Sandboxes routinely differ from production on taxes, cancellation policies and inventory. The shadow week is where we catch price mismatches before customers do.</p>"
+  },
+  {
+    "id": "6238893",
+    "title": "고객지원 도구 규칙 — 고객 데이터 내보내기",
+    "createdAt": "2026-06-30",
+    "storage": "<p>대상: 상담 콘솔(support-console), 상담원, 고객지원 엔지니어링팀</p><h2>규칙</h2><ul><li>상담 콘솔에서 고객 개인정보(이름, 연락처, 이메일, 예약 내역)를 내보낼 때 한 번에 <strong>최대 200건</strong>까지만 허용한다.</li><li>200건을 넘는 추출은 개인정보보호책임자(DPO) 승인 티켓을 받은 뒤 데이터팀이 수행한다.</li><li>내보낸 파일을 개인 PC, 개인 클라우드, 구글 시트 등 승인되지 않은 곳에 저장하지 않는다.</li></ul><h2>배경</h2><p>2025년 외주 상담센터에서 고객 명단 엑셀이 유출된 사고 이후 정한 규칙이다.</p>"
+  }
+]

@@ -1,0 +1,549 @@
+[
+  {
+    "id": "u01",
+    "text": "Add Algolia InstantSearch to course catalog\n\nCatalog search typo tolerance is weak. Index courses + sections into Algolia and swap the catalog search box to InstantSearch widgets. Keep the old endpoint for one release.",
+    "problems": [
+      "5201101"
+    ]
+  },
+  {
+    "id": "u02",
+    "text": "강의 검색 Elastic Cloud 클러스터로 이전\n\n현재 검색 클러스터 운영 부담이 큼. Elastic Cloud 관리형 배포로 강의/자막 인덱스 옮기고 search-indexer 엔드포인트만 교체. 비용은 인프라팀과 협의 완료.",
+    "problems": [
+      "5201101"
+    ]
+  },
+  {
+    "id": "u03",
+    "text": "Move SIS grade sync to Celery beat\n\nThe grade sync workflow is hard to debug for new hires. Rewrite it as a Celery periodic task (beat every 15 min) with a chain per course section. Remove the Temporal worker afterwards.",
+    "problems": [
+      "5201102"
+    ]
+  },
+  {
+    "id": "u04",
+    "text": "Bulk enrollment as Step Functions state machine\n\nRegistrar wants bulk enrollment for 5k-student cohorts. Implement as an AWS Step Functions state machine (Lambda per batch of 200), triggered from the admin console upload.",
+    "problems": [
+      "5201102"
+    ]
+  },
+  {
+    "id": "u05",
+    "text": "Re-enable Proctorio for Nursing midterms\n\nNursing faculty prefer the Proctorio settings they had last year. Turn the Proctorio integration back on for the Nursing school tenant for the November midterms only.",
+    "problems": [
+      "5201104"
+    ]
+  },
+  {
+    "id": "u06",
+    "text": "ProctorU live proctoring for bar-prep exams\n\nLaw school asked for live human proctors on the bar-prep mock exams. Integrate ProctorU scheduling + launch into the exam player for the law tenant.",
+    "problems": [
+      "5201104"
+    ]
+  },
+  {
+    "id": "u07",
+    "text": "Send password reset mails via SendGrid\n\nPostmark had a 20 min delay yesterday. Route password reset and email verification through SendGrid (we still have an account) and keep Postmark for everything else.",
+    "problems": [
+      "5201105"
+    ]
+  },
+  {
+    "id": "u08",
+    "text": "메일 발송 비용 절감: Amazon SES 전환\n\n학기 초 과제 알림 메일 발송량 증가로 비용 상승. 과제 알림/강의 공지 메일을 SES로 전환. 바운스 처리는 SNS 토픽으로 간단히 구현.",
+    "problems": [
+      "5201105"
+    ]
+  },
+  {
+    "id": "u09",
+    "text": "Add LaunchDarkly SDK for quiz editor experiment\n\nProduct wants an A/B test on the new quiz editor. Add the LaunchDarkly React SDK and create a 50/50 experiment flag. Trial account is already set up.",
+    "problems": [
+      "5201106"
+    ]
+  },
+  {
+    "id": "u10",
+    "text": "Ship Study Groups page to all universities\n\nStudy Groups is done and QA'd. Release it to all tenants in Tuesday's deploy. It's small, no toggle needed. Add nav entry under My Courses.",
+    "problems": [
+      "5201107"
+    ]
+  },
+  {
+    "id": "u11",
+    "text": "Inline edit of released grades in gradebook\n\nInstructors complain that fixing a released grade takes too many clicks. Make published grade cells editable inline; value saves on blur and students see it immediately. Change is written to the audit log.",
+    "problems": [
+      "5201108"
+    ]
+  },
+  {
+    "id": "u12",
+    "text": "성적 공개 후 커브 일괄 적용 스크립트\n\n통계학개론 교수 요청: 이미 공개된 중간고사 점수에 커브 적용(일부 학생 점수 하향 포함). 운영 DB에 UPDATE 쿼리로 바로 반영하고 학생들에게 공지 메일 발송.",
+    "problems": [
+      "5201108",
+      "5201115"
+    ]
+  },
+  {
+    "id": "u13",
+    "text": "Export class roster with grades to CSV\n\nDepartment chairs want a CSV of every section roster with student name, student number and current grade so they can review at-risk students in Excel. Add 'Export CSV' to the section page.",
+    "problems": [
+      "5201109"
+    ]
+  },
+  {
+    "id": "u14",
+    "text": "Sync at-risk students list to Google Sheets\n\nAdvisors already use a shared Google Sheet. Write a nightly job that pushes students with GPA < 2.0 (name, email, courses, GPA) into the advisors' sheet.",
+    "problems": [
+      "5201109"
+    ]
+  },
+  {
+    "id": "u15",
+    "text": "지도교수용 학생 성적 엑셀 다운로드\n\n지도교수 화면에 담당 학생들의 학기별 성적·출석 현황을 xlsx로 내려받는 버튼 추가. 학번/이름 포함.",
+    "problems": [
+      "5201109"
+    ]
+  },
+  {
+    "id": "u16",
+    "text": "Serve lecture uploads directly via presigned URL\n\nTranscoding adds ~10 minutes before an uploaded lecture is playable. Let the player stream the original upload via a presigned S3 URL while transcoding runs, then switch when HLS is ready.",
+    "problems": [
+      "5201110"
+    ],
+    "acceptable": [
+      "5201114"
+    ]
+  },
+  {
+    "id": "u17",
+    "text": "과제 제출 영상 원본 재생 지원\n\n실기 과제 제출 영상(mp4)은 채점자가 바로 봐야 함. 트랜스코딩 건너뛰고 원본 파일 그대로 플레이어에 연결.",
+    "problems": [
+      "5201110"
+    ]
+  },
+  {
+    "id": "u18",
+    "text": "Add email and student number to quiz_submitted event\n\nSupport can't match Amplitude sessions to tickets. Add user email and student_number as event properties on quiz_submitted and assignment_submitted.",
+    "problems": [
+      "5201111"
+    ]
+  },
+  {
+    "id": "u19",
+    "text": "Segment identify 호출에 사용자 정보 추가\n\n마케팅 대시보드에서 사용자 구분이 안 됨. Segment identify traits에 name, email 추가.",
+    "problems": [
+      "5201111"
+    ]
+  },
+  {
+    "id": "u20",
+    "text": "Public endpoint: GET /v2/public/courses/{id}/syllabus\n\nUniversity websites want to embed syllabi. Add the route to Kong under /v2/public. Skip gateway plugins for now to ship before registration week; throttling can come later if we see abuse.",
+    "problems": [
+      "5201112"
+    ]
+  },
+  {
+    "id": "u21",
+    "text": "공개 API 출석 현황 조회 엔드포인트 추가\n\n대학 포털 연동용 GET /public/attendance/{sectionId}. 게이트웨이 라우트 추가. rate limit은 일단 미설정으로 배포하고 트래픽 보고 결정.",
+    "problems": [
+      "5201112"
+    ]
+  },
+  {
+    "id": "u22",
+    "text": "Publish lecture recordings immediately after upload\n\nInstructors want recordings visible to students right after transcoding. Publish automatically; captions are generated in the background and the course team can review them later in the week.",
+    "problems": [
+      "5201114"
+    ]
+  },
+  {
+    "id": "u23",
+    "text": "Fix enrollment status for 40 students\n\nSIS sent wrong status codes for 40 students in BIO-201. I'll run an UPDATE on prod enrollments from my SQL client to set status='active'; list of IDs attached.",
+    "problems": [
+      "5201115"
+    ]
+  },
+  {
+    "id": "u24",
+    "text": "Chore: web dependency bumps + debug improvements\n\n- bump React 18.3 -> 19\n- bump vite, eslint\n- remove unused moment.js\n- fix storybook build\n- add student_email to Mixpanel super properties so debugging sessions is easier\n- delete dead CSS",
+    "problems": [
+      "5201111"
+    ]
+  },
+  {
+    "id": "u25",
+    "text": "Q3 cleanup: registrar tooling\n\nMisc items:\n1. rename 'Term' -> 'Session' in admin labels\n2. fix pagination on audit view\n3. dump full enrollment table (names, IDs, status) to xlsx for the registrar's annual audit and email it to them\n4. remove old feature flag config",
+    "problems": [
+      "5201109"
+    ]
+  },
+  {
+    "id": "u26",
+    "text": "Grade appeals in mobile app (MVP)\n\nStudents can submit a grade appeal from the app.\n- New POST /public/appeals route via Kong, no throttling for MVP\n- Track appeal_submitted in Amplitude with student name and course\n- Launch to all students Monday together with the deploy",
+    "problems": [
+      "5201107",
+      "5201112",
+      "5201111"
+    ]
+  },
+  {
+    "id": "u27",
+    "text": "Let TAs override final grades after release\n\nHead TAs need to fix released final grades without waiting for the instructor. Add 'Override' permission for TA role on published grades; each override is logged.",
+    "problems": [
+      "5201108"
+    ]
+  },
+  {
+    "id": "u28",
+    "text": "Use Postgres full-text search for catalog\n\nThe search cluster is overkill for catalog. Add a tsvector column on courses and query it directly; decommission the catalog index.",
+    "problems": [
+      "5201101"
+    ]
+  },
+  {
+    "id": "u29",
+    "text": "일괄 수강신청 처리 Celery 체인으로 재작성\n\nTemporal 워크플로 학습 비용이 커서 bulk enrollment를 Celery chain + chord로 재구현.",
+    "problems": [
+      "5201102"
+    ]
+  },
+  {
+    "id": "u30",
+    "text": "코스 페이지 AI 학습 도우미 전체 오픈\n\nAI 도우미 개발 완료. 다음 배포에서 플래그 없이 모든 대학·모든 코스에 바로 노출.",
+    "problems": [
+      "5201107"
+    ]
+  },
+  {
+    "id": "u31",
+    "text": "Attach lecture videos in Files module\n\nSome instructors upload lecture mp4s as regular files. Let students stream them in-browser from the Files download link instead of forcing them through the video module.",
+    "problems": [
+      "5201110"
+    ],
+    "acceptable": [
+      "5201114"
+    ]
+  },
+  {
+    "id": "u32",
+    "text": "Support tool: SQL console for data fixes\n\nSupport keeps asking eng for data fixes. Add a SQL console page in the support tool that runs statements against the prod student DB (write access) for senior support staff.",
+    "problems": [
+      "5201115"
+    ]
+  },
+  {
+    "id": "u33",
+    "text": "Build in-house webcam proctoring\n\nHonorlock per-exam fee is high. Prototype our own proctoring: webcam capture in the exam player, face detection with an open-source model, flag suspicious frames for instructors.",
+    "problems": [
+      "5201104"
+    ]
+  },
+  {
+    "id": "u34",
+    "text": "Course announcement emails via Mailgun\n\nAnnouncement emails are bulk and spiky. Send course announcements through Mailgun; keep transactional on the current provider.",
+    "problems": [
+      "5201105"
+    ]
+  },
+  {
+    "id": "u35",
+    "text": "Gradebook CSV import overwrites published grades\n\nInstructors re-import their offline spreadsheets late in term. Change the import so it overwrites existing grades including published ones, instead of skipping them.",
+    "problems": [
+      "5201108"
+    ]
+  },
+  {
+    "id": "u36",
+    "text": "Flagsmith trial for mobile toggles\n\nMobile team wants remote toggles without depending on the backend release. Try Flagsmith SaaS for the iOS/Android apps this sprint.",
+    "problems": [
+      "5201106"
+    ]
+  },
+  {
+    "id": "u37",
+    "text": "스프린트 잡무 모음 (11월 2주차)\n\n- 퀴즈 타이머 폰트 크기 수정\n- 관리자 화면 정렬 버그\n- 강의 녹화 영상은 우선 자막 없이 공개하고 자막은 다음 주에 업로드 (교수진 요청)\n- 로그 레벨 조정",
+    "problems": [
+      "5201114"
+    ]
+  },
+  {
+    "id": "u38",
+    "text": "Send IP and user agent with page_view\n\nGrowth wants a geo dashboard. Include client IP address and user agent on page_view events sent to Amplitude.",
+    "problems": [
+      "5201111"
+    ]
+  },
+  {
+    "id": "u39",
+    "text": "Replace Temporal with Airflow for nightly grade sync\n\nData team already runs Airflow. Move the nightly SIS grade sync into an Airflow DAG and shut down the Temporal workers.",
+    "problems": [
+      "5201102"
+    ]
+  },
+  {
+    "id": "u40",
+    "text": "Renew Proctorio license for Medical school\n\nMedical school's exams are all built around Proctorio settings. Renew the Proctorio license for one more year for that tenant and keep the integration enabled.",
+    "problems": [
+      "5201104"
+    ]
+  },
+  {
+    "id": "u41",
+    "text": "Live session recordings: skip caption review\n\nCaption review takes the course team too long. For recordings of live sessions, publish with raw auto-captions and drop the review step entirely.",
+    "problems": [
+      "5201114"
+    ]
+  },
+  {
+    "id": "u42",
+    "text": "Fix timezone bug in assignment due dates\n\nDue dates shift by one hour for tenants in Asia/Seoul after DST changes elsewhere. Store due dates in UTC with tenant tz.",
+    "problems": []
+  },
+  {
+    "id": "u43",
+    "text": "과제 제출 화면 다크모드 지원\n\ndark-mode-submission 플래그(Unleash) 뒤에서 개발, 파일럿 대학부터 롤아웃.",
+    "problems": []
+  },
+  {
+    "id": "u44",
+    "text": "Upgrade Django 4.2 to 5.1\n\nLTS upgrade. Fix deprecated URL patterns and run full regression.",
+    "problems": []
+  },
+  {
+    "id": "u45",
+    "text": "Add course-code synonyms to OpenSearch\n\n'CS101' and 'CS 101' and 'Intro to CS' should match. Add a synonym filter to the catalog index and reindex.",
+    "problems": []
+  },
+  {
+    "id": "u46",
+    "text": "Spike: Algolia vs OpenSearch relevance (revisit input)\n\nTimeboxed 2 days. Compare relevance on a sample of public catalog queries using synthetic data only. Output a doc; no production change.",
+    "problems": []
+  },
+  {
+    "id": "u47",
+    "text": "Migrate remaining Proctorio exams to Honorlock\n\n14 exams still reference Proctorio settings. Migrate them to Honorlock profiles and notify instructors.",
+    "problems": []
+  },
+  {
+    "id": "u48",
+    "text": "Proctorio 연동 코드 삭제\n\n봄학기 종료로 Proctorio 연동 모듈, 설정 화면, 관련 마이그레이션 정리.",
+    "problems": []
+  },
+  {
+    "id": "u49",
+    "text": "Temporal workflow for transcript requests\n\nOfficial transcript requests: workflow with SIS fetch, PDF render, registrar sign-off and delivery. Implement as Temporal workflow.",
+    "problems": []
+  },
+  {
+    "id": "u50",
+    "text": "'Assignment graded' notification email\n\nWhen a grade is published, enqueue an RQ task that sends the notification email through Postmark.",
+    "problems": []
+  },
+  {
+    "id": "u51",
+    "text": "Remove leftover SendGrid templates\n\nMove the last two templates (course invite, waitlist) to Postmark and delete the SendGrid API key.",
+    "problems": []
+  },
+  {
+    "id": "u52",
+    "text": "Unleash flag for new quiz editor\n\nCreate quiz-editor-v2 flag in Unleash, default off, enable for pilot university.",
+    "problems": []
+  },
+  {
+    "id": "u53",
+    "text": "Fix typo on syllabus page header\n\nHeader says 'Sylabus'. Ship directly in next deploy.",
+    "problems": []
+  },
+  {
+    "id": "u54",
+    "text": "Security: XSS in discussion forum markdown\n\nSanitize iframe tags in markdown renderer. Hotfix to all tenants today.",
+    "problems": []
+  },
+  {
+    "id": "u55",
+    "text": "스페인어 번역 수정 배포\n\nes-ES 로케일에서 '제출' 버튼 번역 오류 수정. 플래그 없이 다음 배포에 포함.",
+    "problems": []
+  },
+  {
+    "id": "u56",
+    "text": "Auto-regrade after answer-key correction\n\nQ7 on CHEM-110 final had the wrong key. Owner corrected it; regrade only raises affected scores. Log the regrade and notify students.",
+    "problems": []
+  },
+  {
+    "id": "u57",
+    "text": "Second-approver step for published grade changes\n\nAdd 'request change' flow: instructor proposes, coordinator approves, both recorded in grade audit log.",
+    "problems": []
+  },
+  {
+    "id": "u58",
+    "text": "성적 공개 전 입력 화면 개선\n\n공개 전 임시 성적(draft) 입력 화면에 일괄 붙여넣기 지원. gradebook-paste 플래그 뒤에서 파일럿 진행.",
+    "problems": []
+  },
+  {
+    "id": "u59",
+    "text": "Section size CSV for dean's office\n\nExport number of enrolled students per section and department as CSV. Aggregated only; sections with fewer than 10 students are merged into 'Other'.",
+    "problems": []
+  },
+  {
+    "id": "u60",
+    "text": "New Registrar Reporting report: academic probation\n\nAdd probation list report to the Registrar Reporting portal, restricted to registrar role.",
+    "problems": []
+  },
+  {
+    "id": "u61",
+    "text": "학과별 수강생 수 통계 CSV 다운로드\n\n학과/학기별 수강생 수 집계만 포함. 10명 미만 셀은 마스킹 처리.",
+    "problems": []
+  },
+  {
+    "id": "u62",
+    "text": "Embed public YouTube videos in course pages\n\nInstructors can paste YouTube URLs and we render the standard embed player. These are external public videos (with YouTube captions); we don't store them.",
+    "problems": []
+  },
+  {
+    "id": "u63",
+    "text": "Add AV1 rendition to media pipeline\n\nAdd AV1 to the transcoding ladder for modern browsers; HLS fallback unchanged.",
+    "problems": []
+  },
+  {
+    "id": "u64",
+    "text": "미디어 파이프라인 트랜스코딩 실패 재시도\n\n트랜스코딩 작업 실패 시 지수 백오프로 3회 재시도, 최종 실패 시 업로더에게 알림.",
+    "problems": []
+  },
+  {
+    "id": "u65",
+    "text": "Live captions for streamed sessions\n\nEnable live auto-captions during streams. Recording gets reviewed captions within 48h via existing captioning queue.",
+    "problems": []
+  },
+  {
+    "id": "u66",
+    "text": "Replace email with learner_key in Amplitude events\n\nLegacy events still send user email. Switch identifier to HMAC learner_key everywhere.",
+    "problems": []
+  },
+  {
+    "id": "u67",
+    "text": "분석 이벤트에서 학번 필드 제거\n\n구 버전 모바일 앱 이벤트에 남아있는 student_number 속성 제거.",
+    "problems": []
+  },
+  {
+    "id": "u68",
+    "text": "Grade audit log: include actor email\n\nRegistrar wants to see who changed a grade. Store actor email and approver email in the internal grade audit log (not sent to analytics).",
+    "problems": []
+  },
+  {
+    "id": "u69",
+    "text": "Internal endpoint: grading -> notifications\n\ngRPC call on the service mesh from grading service to notifications service. Not routed through Kong.",
+    "problems": []
+  },
+  {
+    "id": "u70",
+    "text": "Public endpoint for course calendar feed\n\nGET /v2/public/sections/{id}/calendar.ics through Kong, rate-limit plugin 60 req/min per token.",
+    "problems": []
+  },
+  {
+    "id": "u71",
+    "text": "LTI 1.1 launch for Pearsall Learning content\n\nPartner publisher only supports LTI 1.1 for now. Add a 1.1 launch config for their course packs.",
+    "problems": [],
+    "acceptable": [
+      "5201113"
+    ]
+  },
+  {
+    "id": "u72",
+    "text": "LTI 1.3 Deep Linking 지원\n\n외부 도구에서 콘텐츠 선택 후 과제로 바로 추가할 수 있도록 Deep Linking 2.0 구현.",
+    "problems": []
+  },
+  {
+    "id": "u73",
+    "text": "Backfill job to fix enrollment status\n\nReviewed migration-backed backfill for 40 BIO-201 students with wrong SIS status; runs via the backfill job runner with audit trail.",
+    "problems": []
+  },
+  {
+    "id": "u74",
+    "text": "INC-2231: unlock exam attempts (break-glass)\n\nExam player outage locked 300 attempts. IC approved in #inc-2231; on-call runs the reviewed UPDATE and records it in the incident timeline.",
+    "problems": []
+  },
+  {
+    "id": "u75",
+    "text": "Debug slow gradebook load with replica queries\n\nRun EXPLAIN ANALYZE on the read replica for the gradebook query; no writes.",
+    "problems": []
+  },
+  {
+    "id": "u76",
+    "text": "Admin console: bulk withdraw action\n\nRegistrar can withdraw a list of students from a section in the admin console; each change goes to the audit log. Behind admin-bulk-withdraw flag.",
+    "problems": []
+  },
+  {
+    "id": "u77",
+    "text": "자막 편집기 개선\n\n자막 검수 화면에서 타임코드 일괄 이동 기능 추가. caption-editor-v2 플래그 적용.",
+    "problems": []
+  },
+  {
+    "id": "u78",
+    "text": "Upgrade PostgreSQL 15.4 to 15.8\n\nMinor version upgrade during maintenance window.",
+    "problems": []
+  },
+  {
+    "id": "u79",
+    "text": "Fix flaky quiz timer test\n\nUse fake timers in QuizTimer.spec; remove sleep.",
+    "problems": []
+  },
+  {
+    "id": "u80",
+    "text": "CI 파이프라인 캐시 개선\n\npnpm store 캐시 키 정리로 CI 시간 단축.",
+    "problems": []
+  },
+  {
+    "id": "u81",
+    "text": "Rotate Postmark server tokens\n\nQuarterly key rotation; update secrets in Vault.",
+    "problems": []
+  },
+  {
+    "id": "u82",
+    "text": "Remove LaunchDarkly leftovers from mobile\n\nOld POC left the LaunchDarkly package in the Android app. Remove dependency; flags already come from Unleash.",
+    "problems": []
+  },
+  {
+    "id": "u83",
+    "text": "Show 'grade updated' banner after approved change\n\nWhen a coordinator-approved change lands on a published grade, show a banner to the student. Behind grade-change-banner flag.",
+    "problems": []
+  },
+  {
+    "id": "u84",
+    "text": "강의 검색 결과 페이지네이션 버그\n\n두 번째 페이지부터 결과 중복 노출. search_after 커서 처리 수정.",
+    "problems": []
+  },
+  {
+    "id": "u85",
+    "text": "Temporal retry policy for SIS timeouts\n\nGrade sync activities time out on SIS maintenance nights. Increase retry backoff and add heartbeat.",
+    "problems": []
+  },
+  {
+    "id": "u86",
+    "text": "Honorlock 시험 기본 설정 변경\n\nHonorlock 프로필 기본값에서 브라우저 잠금 활성화, 화면 녹화 비활성화.",
+    "problems": []
+  },
+  {
+    "id": "u87",
+    "text": "CDN cache headers for HLS segments\n\nSet immutable cache-control on HLS segments; short TTL on playlists.",
+    "problems": []
+  },
+  {
+    "id": "u88",
+    "text": "Students download their own grade history as CSV\n\nFrom the student profile, let a student download their own grades across terms as CSV.",
+    "problems": [],
+    "acceptable": [
+      "5201109"
+    ]
+  },
+  {
+    "id": "u89",
+    "text": "푸시 알림 발송 RQ 태스크 추가\n\n과제 마감 1시간 전 푸시 알림 1건 발송하는 RQ 태스크 추가 (수 초 내 완료).",
+    "problems": []
+  },
+  {
+    "id": "u90",
+    "text": "Spike: ProctorU cost for ADR-015 revisit\n\nGather ProctorU pricing for the 2028 renewal discussion. Document only; no integration.",
+    "problems": []
+  }
+]

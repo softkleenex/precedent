@@ -1,0 +1,92 @@
+[
+ {
+  "id": "40041101",
+  "title": "ADR-014: Redis Streams for the matchmaking ticket queue",
+  "createdAt": "2025-09-03",
+  "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Date:</strong> 2025-09-03 &middot; <strong>Owners:</strong> Matchmaking squad</p><h2>Context</h2><p>Matchmaking tickets arrive at ~40k/s at peak across 6 regions. Tickets live for seconds, need per-region ordering and must be re-claimable when a matcher pod dies.</p><h2>Decision</h2><p>Matchmaking tickets are enqueued and consumed through Redis Streams with one consumer group per region. We will not run Kafka or RabbitMQ for matchmaking traffic.</p><h2>Alternatives considered</h2><ul><li>Kafka: rejected. Consumer rebalances add multi-second stalls during deploys, and we would need a dedicated platform owner.</li><li>RabbitMQ: rejected, no replay and poor behaviour under queue buildup.</li><li>Amazon SQS FIFO: rejected because of per-group throughput limits.</li></ul><h2>Consequences</h2><p>This ADR only covers matchmaking. Analytics pipelines keep using Kinesis.</p>"
+ },
+ {
+  "id": "40041102",
+  "title": "ADR-017: Keycloak as the player identity provider",
+  "createdAt": "2025-11-18",
+  "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Deciders:</strong> Accounts team, Security</p><h2>Context</h2><p>We have 8M MAU across PC, console and mobile, and data residency requirements in KR and JP.</p><h2>Decision</h2><p>All player login, token issuance and token refresh must go through our self-hosted Keycloak realm. Platform logins (Steam, PSN, Xbox, Apple, Google) are federated into Keycloak as identity providers; game services never verify platform tickets themselves, they only accept Keycloak-issued tokens.</p><h2>Rejected options</h2><ul><li>Auth0: per-MAU pricing is prohibitive at our scale.</li><li>Firebase Authentication: no KR/JP data residency guarantee, weak console support.</li></ul>"
+ },
+ {
+  "id": "40041103",
+  "title": "ADR-027: ScyllaDB for leaderboards (supersedes ADR-011)",
+  "createdAt": "2026-03-09",
+  "storage": "<p><strong>Status:</strong> Accepted &middot; <strong>Supersedes:</strong> ADR-011</p><h2>Context</h2><p>The global board on DynamoDB hit hot-partition throttling every season reset.</p><h2>Decision</h2><p>Seasonal, event and all-time leaderboards are persisted in ScyllaDB. Top-N reads are served from a Redis sorted-set cache rebuilt from Scylla.</p><h2>Alternatives</h2><ul><li>Stay on DynamoDB: rejected, see context.</li><li>Apache Cassandra: rejected, JVM GC pauses and higher ops load for the same data model.</li><li>MongoDB: rejected, sorted range queries at this cardinality were 5x slower in the benchmark.</li></ul>"
+ },
+ {
+  "id": "40041104",
+  "title": "ADR-011: DynamoDB for leaderboards",
+  "createdAt": "2024-06-21",
+  "storage": "<p><strong>Status:</strong> Superseded by ADR-027 (2026-03-09)</p><h2>Decision</h2><p>Leaderboards are stored in DynamoDB with one GSI per season, ranked by score.</p><h2>Notes</h2><p>Kept for history. Do not use for new work.</p>"
+ },
+ {
+  "id": "40041105",
+  "title": "ADR-031: Agones for dedicated game server orchestration",
+  "createdAt": "2026-10-14",
+  "storage": "<p><strong>Status:</strong> Proposed &middot; under review, not yet accepted &middot; <strong>Author:</strong> Game server infra</p><h2>Context</h2><p>Fleet scaling on the current GameLift setup is slow and expensive for our session lengths.</p><h2>Proposed decision</h2><p>Run dedicated game servers on GKE with Agones fleets and autoscalers instead of Amazon GameLift. Unity Multiplay was also evaluated and is not recommended.</p><h2>Open questions</h2><ul><li>Cross-cloud latency to Kinesis analytics.</li><li>Migration window for the current GameLift fleets.</li></ul>"
+ },
+ {
+  "id": "40041106",
+  "title": "Store &amp; Payments Policy: purchase entitlement",
+  "createdAt": "2025-05-02",
+  "storage": "<h2>Scope</h2><p>Applies to every surface that sells premium currency, items, bundles or battle passes: mobile, Steam, console and the Xsolla web shop.</p><h2>Policy</h2><p>Before any premium currency, item or battle pass entitlement is granted, the store receipt must be validated server-side by payments-service against the issuing platform. A purchase-success signal from the game client is never sufficient on its own to grant anything.</p><h2>Rationale</h2><p>In 2024 a patched client faked Google Play callbacks and minted ~2.1M gems before detection.</p>"
+ },
+ {
+  "id": "40041107",
+  "title": "Trust &amp; Safety: bulk enforcement approval",
+  "createdAt": "2025-08-27",
+  "storage": "<h2>Rule</h2><p>Any bulk enforcement action &mdash; a ban wave, a mass currency or item rollback, or a suspension touching more than 50 accounts in one operation &mdash; requires written sign-off from the Trust &amp; Safety lead in #ts-approvals before it is executed.</p><h2>Out of scope</h2><ul><li>Single-account actions taken by on-call moderators.</li><li>Temporary (24h) automated kicks issued by the live anti-cheat signature pipeline.</li></ul><h2>Why</h2><p>The March 2025 false-positive wave banned 11k legitimate players and took a week to reverse.</p>"
+ },
+ {
+  "id": "40041108",
+  "title": "Live Ops sync — 2026-06-12",
+  "createdAt": "2026-06-12",
+  "storage": "<p><strong>Attendees:</strong> Live ops, backend on-call, community, QA</p><h2>Discussion</h2><ul><li>Two weekend incidents in May traced to event config pushed Saturday with nobody from backend online.</li><li>Community team wants more lead time for announcements.</li><li>QA asked for a staging soak of at least one day for drop-rate changes (not agreed, revisit).</li></ul><h2>Outcome</h2><ul><li><strong>Decision:</strong> No live-event configuration changes (drop rates, event schedules, store rotations, reward tables) go out between Friday 18:00 and Monday 10:00 KST. The only exception is rolling back a change that is already broken.</li></ul><h2>Action items</h2><ul><li>Minji: add the freeze window to the live-ops calendar.</li><li>Tom: block the config-push job during the window.</li></ul>"
+ },
+ {
+  "id": "40041109",
+  "title": "채팅 데이터 보관 원칙",
+  "createdAt": "2025-12-04",
+  "storage": "<h2>배경</h2><p>개인정보 보호 검토 결과 채팅 원문 장기 보관은 위험 요소로 지적되었다.</p><h2>원칙</h2><p>채팅 메시지 원문은 최대 30일까지만 보관한다. 30일이 지난 원문은 DB, 캐시, 백업, 아카이브 어디에도 남기지 않고 자동 삭제한다.</p><h2>예외</h2><ul><li>신고된 메시지와 그 앞뒤 20개 메시지는 T&amp;S 조사가 종료될 때까지 별도 보관할 수 있다.</li><li>원문이 포함되지 않은 집계 지표(메시지 수, 금칙어 탐지 횟수 등)는 보관 기간 제한이 없다.</li></ul>"
+ },
+ {
+  "id": "40041110",
+  "title": "확률형 아이템 운영 규칙",
+  "createdAt": "2025-03-17",
+  "storage": "<h2>목적</h2><p>확률형 아이템 정보 공개 의무를 지키고 이용자 신뢰를 유지한다.</p><h2>규칙</h2><p>확률형 아이템(가챠, 상자, 뽑기)의 확률 테이블이나 보상 풀을 변경하는 배포는 게임 내 공지와 공식 홈페이지 확률 공개 페이지 갱신이 먼저 완료된 뒤에만 나갈 수 있다. 사전 공지 없이 확률을 바꾸는 배포는 핫픽스라도 허용하지 않는다.</p><h2>담당</h2><p>공지 확인은 라이브 운영 PM, 배포는 store-service 담당.</p>"
+ },
+ {
+  "id": "40041111",
+  "title": "백엔드 주간회의 회의록 (2026-04-08)",
+  "createdAt": "2026-04-08",
+  "storage": "<p><strong>참석:</strong> 백엔드 리드, 그로스팀, 플랫폼팀</p><h2>논의</h2><ul><li>그로스팀이 세그먼트 기반 마케팅 푸시 툴을 요청함.</li><li>현재 iOS는 APNs 직접 발송, Android는 FCM으로 이원화되어 장애 대응이 번거로움.</li></ul><h2>결정 사항</h2><ul><li><strong>결정:</strong> 모바일 푸시 알림은 FCM(Firebase Cloud Messaging)으로 일원화한다. iOS도 FCM을 거쳐 APNs로 보낸다. OneSignal, Airship은 도입하지 않는다.</li></ul><h2>액션 아이템</h2><ul><li>지훈: iOS 직접 발송 경로를 FCM으로 마이그레이션 (Q2)</li></ul>"
+ },
+ {
+  "id": "40041112",
+  "title": "Engineering Handbook — Logging & Telemetry",
+  "createdAt": "2025-07-30",
+  "storage": "<h2>Purpose</h2><p>How backend services write logs, crash dumps and analytics events.</p><h2>원칙 (Principle)</h2><p>Player PII &mdash; email address, phone number, real name, IP address, payment card fragments &mdash; is never written to game-server logs, crash dumps or analytics events. Reference players by the hashed player_id only.</p><h2>Exception</h2><p>fraud-service may persist IP addresses in its encrypted <code>fraud_signals</code> table. This is a datastore, not a log, and is covered by the fraud retention policy.</p><h2>Log levels</h2><p>Use INFO for state transitions, DEBUG is disabled in production.</p>"
+ },
+ {
+  "id": "40041113",
+  "title": "Matchmaking Guideline: rating formula changes",
+  "createdAt": "2026-01-22",
+  "storage": "<h2>Background</h2><p>Season 9 shipped a new MMR decay formula directly and inflated Diamond+ by 40% in a week.</p><h2>규칙 (Guideline)</h2><p>Changes to the MMR / rating formula (including K-factor, decay, placement weighting and uncertainty parameters) reach production only via shadow mode: the new formula runs alongside the live one for at least 7 days, and the competitive design lead reviews the diff report before it becomes authoritative.</p>"
+ },
+ {
+  "id": "40041114",
+  "title": "ADR-021: Easy Anti-Cheat for client integrity",
+  "createdAt": "2025-10-06",
+  "storage": "<p><strong>Status:</strong> Accepted</p><h2>Decision</h2><p>PC client integrity protection uses Easy Anti-Cheat. We do not build or ship our own kernel-mode anti-cheat component.</p><h2>Alternatives considered</h2><ul><li>BattlEye: rejected, licensing terms did not cover our console cross-play setup.</li><li>In-house kernel driver: rejected, security liability and driver-signing burden for a team of our size.</li><li>Vanguard-style always-on driver: rejected for the same reasons.</li></ul><h2>Consequences</h2><p>Server-side detection (statistics, replay analysis) remains in-house.</p>"
+ },
+ {
+  "id": "40041115",
+  "title": "API Gateway Standard",
+  "createdAt": "2025-04-11",
+  "storage": "<h2>Standard</h2><p>Every public-facing HTTP or WebSocket endpoint needs a rate-limit policy configured in the Kong gateway before it is exposed to the internet. The default is 20 req/s per player; higher limits need platform team approval.</p><h2>Notes</h2><p>Cluster-internal gRPC between services does not go through Kong and is not covered.</p>"
+ }
+]
